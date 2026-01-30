@@ -18,9 +18,11 @@ export default async function ChatPage() {
   const role = getUserRole(profile?.role ?? null, user);
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col">
-      <h1 className="text-2xl font-semibold mb-4">Чат</h1>
-      <ChatPanel userId={user.id} role={role} />
+    <div className="h-[calc(100dvh-6rem)] sm:h-[calc(100dvh-8rem)] flex flex-col min-h-0">
+      <h1 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 shrink-0">Чат</h1>
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <ChatPanel userId={user.id} role={role} />
+      </div>
     </div>
   );
 }

@@ -31,8 +31,8 @@ export default async function EnrollPage({
   if (!course) redirect("/dashboard/courses");
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
-      <h1 className="text-2xl font-semibold">Запись на курс: {course.title}</h1>
+    <div className="max-w-md mx-auto space-y-4 sm:space-y-6 px-1">
+      <h1 className="text-xl sm:text-2xl font-semibold">Запись на курс: {course.title}</h1>
       <EnrollForm courseId={courseId} userId={user.id} />
     </div>
   );

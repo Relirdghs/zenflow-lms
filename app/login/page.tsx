@@ -42,15 +42,23 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
+    <div
+      className="min-h-screen min-h-[100dvh] flex items-center justify-center p-4 sm:p-6 bg-muted/30"
+      style={{
+        paddingTop: "max(1rem, env(safe-area-inset-top))",
+        paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+        paddingLeft: "max(1rem, env(safe-area-inset-left))",
+        paddingRight: "max(1rem, env(safe-area-inset-right))",
+      }}
+    >
       <Card className="w-full max-w-md border-0 shadow-lg bg-card">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-semibold text-primary">
+        <CardHeader className="space-y-1 text-center px-4 sm:px-6 pt-6 sm:pt-8">
+          <CardTitle className="text-xl sm:text-2xl font-semibold text-primary">
             ZenFlow
           </CardTitle>
-          <CardDescription>Войдите в свой аккаунт</CardDescription>
+          <CardDescription className="text-sm sm:text-base">Войдите в свой аккаунт</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6 pb-6 sm:pb-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <p className="text-sm text-destructive text-center">{error}</p>
@@ -64,6 +72,7 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="min-h-[44px] sm:min-h-0"
               />
             </div>
             <div className="space-y-2">
@@ -74,13 +83,14 @@ function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="min-h-[44px] sm:min-h-0"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full min-h-[44px] sm:min-h-0" disabled={loading}>
               {loading ? "Вход…" : "Войти"}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <p className="mt-4 text-center text-xs sm:text-sm text-muted-foreground">
             Нет аккаунта?{" "}
             <Link href="/signup" className="text-primary hover:underline">
               Зарегистрироваться
@@ -94,7 +104,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">Загрузка…</div>}>
+    <Suspense fallback={<div className="min-h-screen min-h-[100dvh] flex items-center justify-center p-4 bg-muted/30">Загрузка…</div>}>
       <LoginForm />
     </Suspense>
   );

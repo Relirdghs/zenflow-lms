@@ -49,18 +49,18 @@ export default async function SuperAdminPage() {
     .order("email");
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <Shield className="h-6 w-6 text-primary" />
+        <h1 className="text-xl sm:text-2xl font-semibold flex items-center gap-2">
+          <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-primary shrink-0" />
           Супер-админ
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm sm:text-base text-muted-foreground">
           Управление ролями, просмотр всех чатов, назначение админов группам
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
@@ -127,18 +127,18 @@ export default async function SuperAdminPage() {
           </p>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {(profiles ?? []).map((p) => (
               <div
                 key={p.id}
-                className="flex items-center justify-between gap-4 rounded-lg border p-3"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 rounded-lg border p-3"
               >
-                <div>
-                  <p className="font-medium">{p.full_name || p.email || p.id.slice(0, 8)}</p>
-                  <p className="text-sm text-muted-foreground">{p.email}</p>
+                <div className="min-w-0">
+                  <p className="font-medium text-sm sm:text-base truncate">{p.full_name || p.email || p.id.slice(0, 8)}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{p.email}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{roleLabel(p.role)}</Badge>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge variant="secondary" className="text-xs">{roleLabel(p.role)}</Badge>
                   <RoleUpdater userId={p.id} currentRole={p.role} />
                 </div>
               </div>
@@ -147,11 +147,11 @@ export default async function SuperAdminPage() {
         </CardContent>
       </Card>
 
-      <div className="flex gap-2">
-        <Button asChild variant="outline">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <Button asChild variant="outline" className="w-full sm:w-auto min-h-[44px] sm:min-h-0">
           <Link href="/admin">← Админ-панель</Link>
         </Button>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto min-h-[44px] sm:min-h-0">
           <Link href="/admin/chat">Чат (все беседы)</Link>
         </Button>
       </div>

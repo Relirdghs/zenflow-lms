@@ -139,6 +139,7 @@ export function CourseForm({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Введите название курса"
               required
+              className="min-h-[44px] sm:min-h-0"
             />
           </div>
           <div>
@@ -149,6 +150,7 @@ export function CourseForm({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Краткое описание курса"
               rows={3}
+              className="min-h-[80px]"
             />
           </div>
           <div>
@@ -220,12 +222,12 @@ export function CourseForm({
               </div>
             </div>
           )}
-          <div className="flex gap-2">
-            <Button type="submit" disabled={loading}>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button type="submit" disabled={loading} className="min-h-[44px] sm:min-h-0">
               {loading ? "Сохранение…" : courseId ? "Сохранить" : "Создать и добавить уроки"}
             </Button>
             {courseId && (
-              <Button type="button" variant="outline" asChild>
+              <Button type="button" variant="outline" asChild className="min-h-[44px] sm:min-h-0">
                 <Link href={`/admin/courses/${courseId}/lessons`}>Отмена</Link>
               </Button>
             )}

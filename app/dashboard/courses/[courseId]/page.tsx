@@ -43,17 +43,17 @@ export default async function CoursePage({
   const isEnrolled = !!enrollment;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">{course.title}</h1>
-          <p className="text-muted-foreground mt-1">{course.description}</p>
+          <h1 className="text-xl sm:text-2xl font-semibold">{course.title}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">{course.description}</p>
           <Badge variant="secondary" className="mt-2">
             {courseLevelLabel(course.level)}
           </Badge>
         </div>
         {!isEnrolled && (
-          <Button asChild>
+          <Button asChild className="w-full sm:w-auto shrink-0 min-h-[44px] sm:min-h-0">
             <Link href={`/dashboard/courses/${courseId}/enroll`}>Записаться</Link>
           </Button>
         )}
@@ -81,7 +81,7 @@ export default async function CoursePage({
       )}
 
       <section>
-        <h2 className="text-lg font-medium mb-4">Уроки</h2>
+        <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Уроки</h2>
         <ul className="space-y-2">
           {(lessons ?? []).map((lesson, i) => (
             <li key={lesson.id}>
@@ -91,14 +91,14 @@ export default async function CoursePage({
                     ? `/dashboard/courses/${courseId}/lessons/${lesson.id}`
                     : `/dashboard/courses/${courseId}/enroll`
                 }
-                className="flex items-center gap-4 rounded-lg border p-4 hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-3 sm:gap-4 rounded-lg border p-3 sm:p-4 hover:bg-muted/50 transition-colors min-h-[60px]"
               >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
+                <span className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium">
                   {i + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{lesson.title}</p>
-                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                  <p className="font-medium text-sm sm:text-base truncate">{lesson.title}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {lesson.duration_minutes} мин
                   </p>

@@ -37,24 +37,25 @@ export function ProfileForm({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Данные</CardTitle>
+      <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
+        <CardTitle className="text-sm sm:text-base">Данные</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label>Эл. почта</Label>
-            <Input value={email} disabled className="bg-muted" />
+          <div className="space-y-2">
+            <Label className="text-sm">Эл. почта</Label>
+            <Input value={email} disabled className="bg-muted min-h-[44px] sm:min-h-0" />
           </div>
-          <div>
-            <Label htmlFor="name">Имя и фамилия</Label>
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-sm">Имя и фамилия</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className="min-h-[44px] sm:min-h-0"
             />
           </div>
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">
             {loading ? "Сохранение…" : "Сохранить"}
           </Button>
         </form>

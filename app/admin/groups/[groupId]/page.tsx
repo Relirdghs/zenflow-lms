@@ -88,25 +88,27 @@ export default async function GroupDetailsPage({
   }[];
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+        <Button variant="ghost" size="sm" asChild className="w-fit min-h-[44px] sm:min-h-0">
           <Link href="/admin/groups">← Группы</Link>
         </Button>
-        <Avatar className="h-12 w-12">
-          <AvatarImage src={group.avatar_url ?? undefined} />
-          <AvatarFallback>{group.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div>
-          <h1 className="text-2xl font-semibold">{group.name}</h1>
-          <p className="text-muted-foreground">
-            Участников: {memberIds.length}
-          </p>
+        <div className="flex items-center gap-3 sm:gap-4">
+          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
+            <AvatarImage src={group.avatar_url ?? undefined} />
+            <AvatarFallback>{group.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-semibold truncate">{group.name}</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Участников: {memberIds.length}
+            </p>
+          </div>
         </div>
       </div>
 
       <section>
-        <h2 className="text-lg font-medium mb-4">Данные группы</h2>
+        <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Данные группы</h2>
         <GroupForm
           groupId={groupId}
           defaultName={group.name}
@@ -115,17 +117,17 @@ export default async function GroupDetailsPage({
       </section>
 
       <section>
-        <h2 className="text-lg font-medium mb-4">Участники</h2>
+        <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Участники</h2>
         <GroupMembers groupId={groupId} initialMembers={initialMembers} />
       </section>
 
       <section>
-        <h2 className="text-lg font-medium mb-4">Курсы группы</h2>
+        <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Курсы группы</h2>
         <GroupCourses groupId={groupId} initialCourses={initialCourses} />
       </section>
 
       <section>
-        <h2 className="text-lg font-medium mb-4">Цели группы</h2>
+        <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Цели группы</h2>
         <GroupGoalsForm groupId={groupId} />
         
         <div className="mt-6 space-y-3">

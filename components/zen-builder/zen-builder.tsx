@@ -140,18 +140,18 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4 flex-wrap">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 flex-wrap">
         <Select
           value={addingType ?? ""}
           onValueChange={(v) => (v ? addBlock(v as BlockType) : setAddingType(null))}
         >
-          <SelectTrigger className="w-[240px]">
+          <SelectTrigger className="w-full sm:w-[240px] min-h-[44px] sm:min-h-0">
             <SelectValue placeholder="Добавить блок" />
           </SelectTrigger>
           <SelectContent>
             {BLOCK_TYPES.map(({ type, label, icon: Icon }) => (
-              <SelectItem key={type} value={type}>
+              <SelectItem key={type} value={type} className="min-h-[44px] sm:min-h-0">
                 <span className="flex items-center gap-2">
                   <Icon className="h-4 w-4" />
                   {label}
@@ -160,10 +160,10 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
             ))}
           </SelectContent>
         </Select>
-        {saving && <span className="text-sm text-muted-foreground">Сохранение порядка...</span>}
+        {saving && <span className="text-xs sm:text-sm text-muted-foreground">Сохранение порядка...</span>}
       </div>
 
-      <ul className="space-y-3">
+      <ul className="space-y-2 sm:space-y-3">
         {blocks.map((block, index) => (
           <li key={block.id}>
             <BlockRow
@@ -184,8 +184,8 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
 
       {blocks.length === 0 && (
         <Card>
-          <CardContent className="pt-6">
-            <p className="text-muted-foreground text-center mb-4">
+          <CardContent className="pt-4 sm:pt-6 px-3 sm:px-6">
+            <p className="text-sm sm:text-base text-muted-foreground text-center mb-4">
               Нет блоков. Добавьте блок выше, чтобы начать создание урока.
             </p>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -195,9 +195,11 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => addBlock(type)}
+                  className="min-h-[40px] sm:min-h-0 text-xs sm:text-sm"
                 >
-                  <Icon className="mr-2 h-4 w-4" />
-                  {label}
+                  <Icon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">{label}</span>
+                  <span className="sm:hidden">{label.split(' ')[0]}</span>
                 </Button>
               ))}
             </div>

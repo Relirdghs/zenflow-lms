@@ -21,12 +21,12 @@ export default async function AdminPage() {
     .eq("admin_id", user.id);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">Обзор администратора</h1>
-        <p className="text-muted-foreground">Управление курсами, группами и чатами</p>
+        <h1 className="text-xl sm:text-2xl font-semibold">Обзор администратора</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Управление курсами, группами и чатами</p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Курсы</CardTitle>

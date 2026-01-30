@@ -52,21 +52,21 @@ export default async function AdminGroupsPage() {
   }, {});
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Группы</h1>
-          <p className="text-muted-foreground">Управление группами клиентов</p>
+          <h1 className="text-xl sm:text-2xl font-semibold">Группы</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Управление группами клиентов</p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto min-h-[44px] sm:min-h-0">
           <Link href="/admin/groups/new">Новая группа</Link>
         </Button>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {(groups ?? []).map((g) => (
           <Card key={g.id}>
             <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={g.avatar_url ?? undefined} />
@@ -74,13 +74,13 @@ export default async function AdminGroupsPage() {
                       {g.name.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-medium">{g.name}</span>
+                  <span className="font-medium text-sm sm:text-base">{g.name}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">
-                    {membersCount[g.id] ?? 0} участников
+                <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {membersCount[g.id] ?? 0} уч.
                   </Badge>
-                  <Badge variant="secondary">
+                  <Badge variant="secondary" className="text-xs">
                     {goalsCount[g.id] ?? 0} целей
                   </Badge>
                 </div>

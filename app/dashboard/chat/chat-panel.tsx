@@ -212,9 +212,9 @@ export function ChatPanel({ userId, role }: ChatPanelProps) {
   }, []);
 
   return (
-    <div className="flex flex-1 min-h-0 gap-4">
-      <Card className="w-64 shrink-0 flex flex-col overflow-hidden">
-        <CardHeader className="py-3">
+    <div className="flex flex-col sm:flex-row flex-1 min-h-0 gap-3 sm:gap-4">
+      <Card className="w-full sm:w-56 md:w-64 shrink-0 flex flex-col overflow-hidden max-h-[30vh] sm:max-h-none">
+        <CardHeader className="py-2 sm:py-3 px-3 sm:px-4">
           {isSuperAdmin && (
             <Button
               variant={viewAllMode ? "secondary" : "outline"}
@@ -234,7 +234,7 @@ export function ChatPanel({ userId, role }: ChatPanelProps) {
                   setSearchQuery(e.target.value);
                   searchUsers(e.target.value);
                 }}
-                className="h-8 text-sm"
+                className="h-9 sm:h-8 text-sm min-h-[44px] sm:min-h-0"
               />
               {searchResults.length > 0 && (
                 <div className="border rounded-lg max-h-32 overflow-auto">
@@ -278,30 +278,30 @@ export function ChatPanel({ userId, role }: ChatPanelProps) {
           </ScrollArea>
         </CardContent>
       </Card>
-      <Card className="flex-1 flex flex-col min-w-0">
+      <Card className="flex-1 flex flex-col min-w-0 min-h-0">
         {selectedThread ? (
           <>
-            <CardHeader className="py-3 border-b">
-              <p className="font-medium">
+            <CardHeader className="py-2 sm:py-3 px-3 sm:px-4 border-b shrink-0">
+              <p className="font-medium text-sm sm:text-base truncate">
                 {threads.find((t) => t.otherId === selectedThread)?.otherName ??
                   selectedThread.slice(0, 8)}
               </p>
             </CardHeader>
-            <ScrollArea ref={scrollRef} className="flex-1 p-4">
-              <div className="space-y-3">
+            <ScrollArea ref={scrollRef} className="flex-1 p-3 sm:p-4 min-h-0">
+              <div className="space-y-2 sm:space-y-3">
                 {messages.map((m) => (
                   <div
                     key={m.id}
                     className={`flex ${m.sender_id === userId ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                      className={`max-w-[85%] sm:max-w-[80%] rounded-lg px-3 py-2 text-sm ${
                         m.sender_id === userId
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted"
                       }`}
                     >
-                      <p>{m.text}</p>
+                      <p className="break-words">{m.text}</p>
                       <p
                         className={`text-xs mt-1 ${
                           m.sender_id === userId ? "text-primary-foreground/80" : "text-muted-foreground"
@@ -317,21 +317,23 @@ export function ChatPanel({ userId, role }: ChatPanelProps) {
                 ))}
               </div>
             </ScrollArea>
-            <CardContent className="p-3 border-t flex gap-2">
+            <CardContent className="p-2 sm:p-3 border-t flex gap-2 shrink-0">
               <Input
                 disabled={selectedThread.includes("-")}
-                placeholder="Введите сообщение..."
+                placeholder="Сообщение..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
+                className="min-h-[44px] sm:min-h-0"
               />
-              <Button onClick={send} disabled={loading || !input.trim() || selectedThread.includes("-")}>
-                Отправить
+              <Button onClick={send} disabled={loading || !input.trim() || selectedThread.includes("-")} className="shrink-0 min-h-[44px] sm:min-h-0 px-3 sm:px-4">
+                <span className="hidden sm:inline">Отправить</span>
+                <span className="sm:hidden">→</span>
               </Button>
             </CardContent>
           </>
         ) : (
-          <CardContent className="flex-1 flex items-center justify-center text-muted-foreground">
+          <CardContent className="flex-1 flex items-center justify-center text-muted-foreground text-sm sm:text-base">
             Выберите беседу
           </CardContent>
         )}

@@ -38,14 +38,14 @@ export default async function GoalsPage() {
     : { data: null };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">Цели группы</h1>
-        <p className="text-muted-foreground">Цели вашей группы для практики йоги</p>
+        <h1 className="text-xl sm:text-2xl font-semibold">Цели группы</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Цели вашей группы для практики йоги</p>
       </div>
 
       <section>
-        <h2 className="text-lg font-medium mb-4">Цели группы</h2>
+        <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Цели группы</h2>
         {groupGoals && groupGoals.length > 0 ? (
           <ul className="space-y-3">
             {groupGoals.map((g) => (

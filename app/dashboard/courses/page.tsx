@@ -45,16 +45,16 @@ export default async function DashboardCoursesPage() {
   const available = (allCourses ?? []).filter((c) => !enrolledIds.has(c.id));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">Мои курсы</h1>
-        <p className="text-muted-foreground">Ваши курсы и прогресс</p>
+        <h1 className="text-xl sm:text-2xl font-semibold">Мои курсы</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Ваши курсы и прогресс</p>
       </div>
 
       {normalizedEnrollments.length > 0 && (
         <section>
-          <h2 className="text-lg font-medium mb-4">Записанные</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Записанные</h2>
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {normalizedEnrollments.map((e) => (
                 <Card key={e.id} className="overflow-hidden">
                   {e.courses?.cover_image && (
@@ -101,8 +101,8 @@ export default async function DashboardCoursesPage() {
       )}
 
       <section>
-        <h2 className="text-lg font-medium mb-4">Доступные курсы</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Доступные курсы</h2>
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {available.map((c) => (
             <Card key={c.id} className="overflow-hidden">
               {c.cover_image && (

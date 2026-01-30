@@ -63,15 +63,23 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
-      <Card className="w-full max-w-md border-0 shadow-lg bg-card">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-semibold text-primary">
+    <div
+      className="min-h-screen min-h-[100dvh] flex items-center justify-center p-4 sm:p-6 bg-muted/30 overflow-y-auto"
+      style={{
+        paddingTop: "max(1rem, env(safe-area-inset-top))",
+        paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+        paddingLeft: "max(1rem, env(safe-area-inset-left))",
+        paddingRight: "max(1rem, env(safe-area-inset-right))",
+      }}
+    >
+      <Card className="w-full max-w-md border-0 shadow-lg bg-card my-4">
+        <CardHeader className="space-y-1 text-center px-4 sm:px-6 pt-6 sm:pt-8">
+          <CardTitle className="text-xl sm:text-2xl font-semibold text-primary">
             ZenFlow
           </CardTitle>
-          <CardDescription>Создайте аккаунт</CardDescription>
+          <CardDescription className="text-sm sm:text-base">Создайте аккаунт</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6 pb-6 sm:pb-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <p className="text-sm text-destructive text-center">{error}</p>
@@ -84,6 +92,7 @@ export default function SignupPage() {
                 placeholder="Ваше имя"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
+                className="min-h-[44px] sm:min-h-0"
               />
             </div>
             <div className="space-y-2">
@@ -95,6 +104,7 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="min-h-[44px] sm:min-h-0"
               />
             </div>
             <div className="space-y-2">
@@ -106,13 +116,14 @@ export default function SignupPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
+                className="min-h-[44px] sm:min-h-0"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full min-h-[44px] sm:min-h-0" disabled={loading}>
               {loading ? "Создание аккаунта…" : "Зарегистрироваться"}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <p className="mt-4 text-center text-xs sm:text-sm text-muted-foreground">
             Уже есть аккаунт?{" "}
             <Link href="/login" className="text-primary hover:underline">
               Войти

@@ -55,16 +55,16 @@ export default async function DashboardPage() {
     : { data: null };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">Панель управления</h1>
-        <p className="text-muted-foreground">Ваш прогресс и следующие шаги</p>
+        <h1 className="text-xl sm:text-2xl font-semibold">Панель управления</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Ваш прогресс и следующие шаги</p>
       </div>
 
       <section>
-        <h2 className="text-lg font-medium mb-4">Продолжить обучение</h2>
+        <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Продолжить обучение</h2>
         {enrollments && enrollments.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
             {((enrollments ?? []) as { id: string; progress_percent: number; courses: { id: string; title: string; cover_image: string | null; level: string } | { id: string; title: string; cover_image: string | null; level: string }[] | null }[]).map((e) => {
               const c = e.courses;
               const course = c ? (Array.isArray(c) ? c[0] : c) : null;
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-medium mb-4">Активные цели</h2>
+        <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Активные цели</h2>
         {goals && goals.length > 0 ? (
           <ul className="space-y-2">
             {goals.map((g) => (

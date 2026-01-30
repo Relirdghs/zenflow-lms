@@ -31,17 +31,17 @@ export default async function AdminCoursesPage() {
   const { data: courses } = await query;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Курсы</h1>
-          <p className="text-muted-foreground">Создание и редактирование курсов</p>
+          <h1 className="text-xl sm:text-2xl font-semibold">Курсы</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Создание и редактирование курсов</p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto min-h-[44px] sm:min-h-0">
           <Link href="/admin/courses/new">Новый курс</Link>
         </Button>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {(courses ?? []).map((c) => (
           <Card key={c.id}>
             <CardHeader className="pb-2">

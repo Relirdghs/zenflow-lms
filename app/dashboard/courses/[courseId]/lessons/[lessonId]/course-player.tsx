@@ -64,19 +64,19 @@ export function CoursePlayer({
   }, [updateProgress]);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
+    <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8 px-1">
+      <div className="flex items-center gap-2 sm:gap-4">
+        <Button variant="ghost" size="icon" asChild className="shrink-0 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0">
           <Link href={`/dashboard/courses/${courseId}`}>
             <ChevronLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-xl font-semibold flex-1 truncate">{lessonTitle}</h1>
+        <h1 className="text-lg sm:text-xl font-semibold flex-1 truncate">{lessonTitle}</h1>
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         {blocks.length === 0 ? (
-          <p className="text-muted-foreground">Контента в этом уроке пока нет.</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Контента в этом уроке пока нет.</p>
         ) : (
           blocks.map((block) => (
             <BlockRenderer
@@ -88,30 +88,32 @@ export function CoursePlayer({
         )}
       </div>
 
-      <div className="flex items-center justify-between pt-6 border-t">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 pt-4 sm:pt-6 border-t">
         {prevLesson ? (
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="min-h-[44px] sm:min-h-0 order-2 sm:order-1">
             <Link
               href={`/dashboard/courses/${courseId}/lessons/${prevLesson.id}`}
+              className="flex items-center justify-center"
             >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              {prevLesson.title}
+              <ChevronLeft className="mr-2 h-4 w-4 shrink-0" />
+              <span className="truncate">{prevLesson.title}</span>
             </Link>
           </Button>
         ) : (
-          <div />
+          <div className="hidden sm:block" />
         )}
         {nextLesson ? (
-          <Button asChild>
+          <Button asChild className="min-h-[44px] sm:min-h-0 order-1 sm:order-2">
             <Link
               href={`/dashboard/courses/${courseId}/lessons/${nextLesson.id}`}
+              className="flex items-center justify-center"
             >
-              {nextLesson.title}
-              <ChevronRight className="ml-2 h-4 w-4" />
+              <span className="truncate">{nextLesson.title}</span>
+              <ChevronRight className="ml-2 h-4 w-4 shrink-0" />
             </Link>
           </Button>
         ) : (
-          <Button asChild>
+          <Button asChild className="min-h-[44px] sm:min-h-0 order-1 sm:order-2">
             <Link href={`/dashboard/courses/${courseId}`}>Вернуться к курсу</Link>
           </Button>
         )}
