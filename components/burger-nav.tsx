@@ -16,11 +16,16 @@ export interface BurgerNavItem {
   label: string;
 }
 
+export type BurgerNavBottomItem =
+  | { type: "link"; href: string; label: string }
+  | { type: "logout"; label: string };
+
 interface BurgerNavProps {
   title: string;
   titleHref: string;
   items: BurgerNavItem[];
   homeLink?: { href: string; label: string };
+  bottomItems?: BurgerNavBottomItem[];
   className?: string;
 }
 
@@ -29,6 +34,7 @@ export function BurgerNav({
   titleHref,
   items,
   homeLink,
+  bottomItems = [],
   className = "",
 }: BurgerNavProps) {
   const [open, setOpen] = useState(false);
@@ -89,6 +95,35 @@ export function BurgerNav({
               </Link>
             </DropdownMenuItem>
           ))}
+          {bottomItems.length > 0 && (
+            <>
+              <div className="my-1 h-px bg-border" role="separator" />
+              {bottomItems.map((item, i) =>
+                item.type === "link" ? (
+                  <DropdownMenuItem key={`${item.href}-${i}`} asChild>
+                    <Link
+                      href={item.href}
+                      className="min-h-[44px] flex items-center cursor-pointer"
+                      onClick={() => setOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem key={`logout-${i}`} asChild>
+                    <form action="/auth/signout" method="post">
+                      <button
+                        type="submit"
+                        className="min-h-[44px] flex items-center w-full cursor-pointer"
+                      >
+                        {item.label}
+                      </button>
+                    </form>
+                  </DropdownMenuItem>
+                )
+              )}
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </header>

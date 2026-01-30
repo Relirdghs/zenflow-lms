@@ -53,11 +53,16 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen min-h-[100dvh] flex flex-col md:flex-row bg-background">
-      {/* Бургер-меню: только на мобильных, выпадающий список (не слайды) */}
+      {/* Бургер-меню: только на мобильных; профиль и выход внутри меню */}
       <BurgerNav
         title="ZenFlow"
         titleHref="/dashboard"
         items={burgerItems}
+        bottomItems={[
+          { type: "link", href: "/dashboard/profile", label: "Профиль" },
+          { type: "link", href: "/dashboard", label: "Прогресс" },
+          { type: "logout", label: "Выйти" },
+        ]}
         className="md:hidden"
       />
 
@@ -78,9 +83,9 @@ export default async function DashboardLayout({
         </nav>
       </aside>
 
-      {/* Фиксированная кнопка профиля: safe-area, адаптивно */}
+      {/* Кнопка профиля: только на десктопе; на мобильных — внутри бургер-меню */}
       <div
-        className="fixed z-50 top-4 right-4"
+        className="hidden md:block fixed z-50 top-4 right-4"
         style={{ top: "max(1rem, env(safe-area-inset-top))", right: "max(1rem, env(safe-area-inset-right))" }}
       >
         <DropdownMenu>
@@ -114,9 +119,8 @@ export default async function DashboardLayout({
       </div>
 
       <main
-        className="flex-1 p-4 sm:p-5 md:p-6 overflow-auto min-w-0 pt-14 sm:pt-16 md:pt-6"
+        className="flex-1 p-4 sm:p-5 md:p-6 overflow-auto min-w-0 pt-4 md:pt-14"
         style={{
-          paddingTop: "max(3.5rem, calc(3.5rem + env(safe-area-inset-top)))",
           paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
           paddingLeft: "max(1rem, env(safe-area-inset-left))",
           paddingRight: "max(1rem, env(safe-area-inset-right))",

@@ -46,8 +46,9 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* ZenFlow: sage green, warm beige, slate */
+/* ZenFlow: sage green, warm beige, slate; базовый шрифт чуть крупнее */
 :root {
+  font-size: 17px;
   --radius: 0.75rem;
   --background: oklch(0.98 0.01 95);
   --foreground: oklch(0.22 0.02 260);
