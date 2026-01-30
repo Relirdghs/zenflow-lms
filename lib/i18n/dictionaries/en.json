@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full name",
+    "createAccount": "Create account",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "signingIn": "Signing in...",
+    "creatingAccount": "Creating account..."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "overview": "Overview",
+    "myCourses": "My Courses",
+    "goals": "Goals",
+    "chat": "Chat",
+    "profile": "Profile",
+    "continueLearning": "Continue learning",
+    "activeGoals": "Active goals",
+    "browseAll": "Browse all courses",
+    "noCourses": "No courses yet.",
+    "noGoals": "No active goals.",
+    "yourProgress": "Your progress"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "confirm": "Confirm",
+    "add": "Add",
+    "remove": "Remove",
+    "upload": "Upload"
+  }
+}

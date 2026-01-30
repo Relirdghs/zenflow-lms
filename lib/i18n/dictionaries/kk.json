@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "signIn": "Кіру",
+    "signUp": "Тіркелу",
+    "signOut": "Шығу",
+    "email": "Email",
+    "password": "Құпия сөз",
+    "fullName": "Толық аты",
+    "createAccount": "Тіркелгі жасау",
+    "alreadyHaveAccount": "Тіркелгі бар ма?",
+    "dontHaveAccount": "Тіркелгі жоқ па?",
+    "signingIn": "Кіру...",
+    "creatingAccount": "Тіркелу..."
+  },
+  "dashboard": {
+    "title": "Басқару панелі",
+    "overview": "Шолу",
+    "myCourses": "Менің курстарым",
+    "goals": "Мақсаттар",
+    "chat": "Чат",
+    "profile": "Профиль",
+    "continueLearning": "Оқуды жалғастыру",
+    "activeGoals": "Белсенді мақсаттар",
+    "browseAll": "Барлық курстарды қарау",
+    "noCourses": "Әзірге курстар жоқ.",
+    "noGoals": "Белсенді мақсаттар жоқ.",
+    "yourProgress": "Сіздің прогресс"
+  },
+  "common": {
+    "loading": "Жүктелуде...",
+    "error": "Қате",
+    "success": "Сәтті",
+    "back": "Артқа",
+    "next": "Келесі",
+    "close": "Жабу",
+    "confirm": "Растау",
+    "add": "Қосу",
+    "remove": "Жою",
+    "upload": "Жүктеу"
+  }
+}
