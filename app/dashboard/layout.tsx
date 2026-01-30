@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BurgerNav } from "@/components/burger-nav";
 import { LayoutDashboard, BookOpen, Target, MessageCircle, LogOut } from "lucide-react";
 import { getUserRole } from "@/lib/auth/get-user-role";
 import { getRoleForRedirect } from "@/lib/auth/role-for-middleware";
@@ -48,18 +49,29 @@ export default async function DashboardLayout({
     { href: "/dashboard/chat", label: "Чат", icon: MessageCircle },
   ];
 
+  const burgerItems = nav.map(({ href, label }) => ({ href, label }));
+
   return (
     <div className="min-h-screen min-h-[100dvh] flex flex-col md:flex-row bg-background">
-      <aside className="w-full md:w-56 shrink-0 border-b md:border-b-0 md:border-r border-border p-3 sm:p-4 flex flex-row md:flex-col gap-1 sm:gap-2 overflow-x-auto md:overflow-x-visible">
-        <Link href="/dashboard" className="text-lg sm:text-xl font-semibold text-primary mb-0 md:mb-2 shrink-0 md:shrink">
+      {/* Бургер-меню: только на мобильных, выпадающий список (не слайды) */}
+      <BurgerNav
+        title="ZenFlow"
+        titleHref="/dashboard"
+        items={burgerItems}
+        className="md:hidden"
+      />
+
+      {/* Боковая панель: только на десктопе */}
+      <aside className="hidden md:flex md:w-56 shrink-0 border-r border-border p-4 flex-col gap-2">
+        <Link href="/dashboard" className="text-xl font-semibold text-primary mb-2">
           ZenFlow
         </Link>
-        <nav className="flex md:flex-col gap-1 flex-1 min-w-0">
+        <nav className="flex flex-col gap-1 flex-1">
           {nav.map(({ href, label, icon: Icon }) => (
-            <Button key={href} variant="ghost" asChild className="justify-start shrink-0 md:shrink min-h-[44px] md:min-h-0">
+            <Button key={href} variant="ghost" asChild className="justify-start">
               <Link href={href} className="flex items-center">
                 <Icon className="mr-2 h-4 w-4 shrink-0" />
-                <span className="whitespace-nowrap">{label}</span>
+                {label}
               </Link>
             </Button>
           ))}

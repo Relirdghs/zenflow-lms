@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BurgerNav } from "@/components/burger-nav";
 import {
   LayoutDashboard,
   BookOpen,
@@ -57,6 +58,8 @@ export default async function AdminLayout({
     nav.push({ href: "/admin/super", label: "Супер-админ", icon: Shield });
   }
 
+  const burgerItems = nav.map(({ href, label }) => ({ href, label }));
+
   return (
     <div className="min-h-screen min-h-[100dvh] flex flex-col md:flex-row bg-background">
       {/* Фиксированная кнопка профиля: safe-area, адаптивно */}
@@ -91,21 +94,31 @@ export default async function AdminLayout({
         </DropdownMenu>
       </div>
 
-      <aside className="w-full md:w-56 shrink-0 border-b md:border-b-0 md:border-r border-border p-3 sm:p-4 flex flex-row md:flex-col gap-1 sm:gap-2 overflow-x-auto md:overflow-x-visible">
-        <Link href="/admin" className="text-base sm:text-lg md:text-xl font-semibold text-primary mb-0 md:mb-2 shrink-0 whitespace-nowrap">
+      {/* Бургер-меню: только на мобильных, выпадающий список (не слайды) */}
+      <BurgerNav
+        title="ZenFlow • Админ"
+        titleHref="/admin"
+        items={burgerItems}
+        homeLink={{ href: "/", label: "← На главную" }}
+        className="md:hidden"
+      />
+
+      {/* Боковая панель: только на десктопе */}
+      <aside className="hidden md:flex md:w-56 shrink-0 border-r border-border p-4 flex-col gap-2">
+        <Link href="/admin" className="text-xl font-semibold text-primary mb-2">
           ZenFlow • Админ
         </Link>
-        <nav className="flex md:flex-col gap-1 flex-1 min-w-0">
+        <nav className="flex flex-col gap-1 flex-1">
           {nav.map(({ href, label, icon: Icon }) => (
-            <Button key={href} variant="ghost" asChild className="justify-start shrink-0 md:shrink min-h-[44px] md:min-h-0">
+            <Button key={href} variant="ghost" asChild className="justify-start">
               <Link href={href} className="flex items-center">
                 <Icon className="mr-2 h-4 w-4 shrink-0" />
-                <span className="whitespace-nowrap text-sm">{label}</span>
+                {label}
               </Link>
             </Button>
           ))}
         </nav>
-        <Button variant="ghost" asChild size="sm" className="hidden md:flex min-h-[44px] md:min-h-0">
+        <Button variant="ghost" asChild size="sm">
           <Link href="/">← На главную</Link>
         </Button>
       </aside>
