@@ -21,12 +21,8 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "**.supabase.in",
       },
-      // Data URLs для превью загруженных изображений
-      {
-        protocol: "data",
-        hostname: "",
-      },
     ],
+    // Data URLs не требуют remotePatterns — они inline
     // Минимальный TTL кэша изображений (в секундах)
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 дней
   },
