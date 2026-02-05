@@ -131,12 +131,18 @@ export function ImageUpload({
     } catch (error) {
       console.error("Error optimizing image:", error);
       // Fallback: просто читаем как data URL без оптимизации
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        onChange(result);
-      };
-      reader.readAsDataURL(file);
+      // Оборачиваем в Promise чтобы дождаться завершения
+      const fallbackDataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          resolve(e.target?.result as string);
+        };
+        reader.onerror = () => {
+          reject(new Error("FileReader failed"));
+        };
+        reader.readAsDataURL(file);
+      });
+      onChange(fallbackDataUrl);
     } finally {
       setUploading(false);
     }
