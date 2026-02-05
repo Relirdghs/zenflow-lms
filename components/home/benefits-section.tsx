@@ -36,23 +36,26 @@ const benefits = [
 
 export function BenefitsSection() {
   return (
-    <section className="py-12 sm:py-16">
+    <section className="py-14 sm:py-16 scroll-mt-20">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-10 sm:mb-14 text-foreground">
           Почему выбирают ZenFlow
         </h2>
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {benefits.map((benefit, index) => {
             const Icon = benefit.icon;
             return (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
-                <CardContent className="pt-6">
+              <Card
+                key={index}
+                className="overflow-hidden border border-border/80 bg-card hover:shadow-lg hover:border-primary/20 transition-all duration-300 rounded-xl"
+              >
+                <CardContent className="pt-6 pb-6">
                   <div className="flex items-start gap-4">
-                    <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+                    <div className="p-3 rounded-xl bg-primary/10 shrink-0 ring-1 ring-primary/10">
                       <Icon className="h-6 w-6 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold mb-2 text-base sm:text-lg">{benefit.title}</h3>
+                      <h3 className="font-semibold mb-2 text-base sm:text-lg text-foreground">{benefit.title}</h3>
                       <p className="text-sm text-muted-foreground leading-relaxed">{benefit.description}</p>
                     </div>
                   </div>

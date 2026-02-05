@@ -8,13 +8,13 @@ interface FinalCTASectionProps {
 
 export function FinalCTASection({ user }: FinalCTASectionProps) {
   return (
-    <section className="py-12 sm:py-16 md:py-20 bg-primary/5">
+    <section className="py-16 sm:py-20 md:py-24 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary/10 via-primary/5 to-background border border-primary/20 shadow-inner">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
         <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
             Готовы начать свой путь в йоге?
           </h2>
-          <p className="text-base sm:text-lg text-muted-foreground">
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
             Присоединяйтесь к тысячам учеников из Алматы, которые уже начали свой путь к здоровью и гармонии.
             Начните обучение бесплатно прямо сейчас.
           </p>

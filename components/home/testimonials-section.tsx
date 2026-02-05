@@ -70,9 +70,9 @@ export function TestimonialsSection() {
 
   if (loading) {
     return (
-      <section className="py-12 sm:py-16">
+      <section className="py-14 sm:py-16 scroll-mt-20">
         <div className="container mx-auto px-4 sm:px-6 md:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12 text-foreground">
             Отзывы наших учеников
           </h2>
           <div className="text-center text-muted-foreground">Загрузка отзывов...</div>
@@ -98,9 +98,9 @@ export function TestimonialsSection() {
   };
 
   return (
-    <section className="py-12 sm:py-16 bg-muted/30">
+    <section className="py-14 sm:py-16 scroll-mt-20 bg-muted/30 rounded-2xl">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12 text-foreground">
           Отзывы наших учеников
         </h2>
 

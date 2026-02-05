@@ -32,17 +32,18 @@ const TestimonialsSection = dynamic(() => import("@/components/home/testimonials
 });
 
 async function PopularCourses({ userId }: { userId?: string }) {
-  const supabase = await createClient();
-  const { data: courses } = await supabase
-    .from("courses")
-    .select("id, title, description, cover_image, level, average_rating, review_count, is_featured")
-    .eq("is_featured", true)
-    .order("average_rating", { ascending: false, nullsFirst: false })
-    .limit(6);
+  try {
+    const supabase = await createClient();
+    const { data: courses } = await supabase
+      .from("courses")
+      .select("id, title, description, cover_image, level, average_rating, review_count, is_featured")
+      .eq("is_featured", true)
+      .order("average_rating", { ascending: false, nullsFirst: false })
+      .limit(6);
 
-  if (!courses || courses.length === 0) {
-    return null;
-  }
+    if (!courses || courses.length === 0) {
+      return null;
+    }
 
   return (
     <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -97,6 +98,9 @@ async function PopularCourses({ userId }: { userId?: string }) {
       ))}
     </div>
   );
+  } catch {
+    return null;
+  }
 }
 
 function PopularCoursesSkeleton() {
@@ -120,50 +124,53 @@ function PopularCoursesSkeleton() {
 }
 
 export default async function HomePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  let user: { id: string } | null = null;
   let panelHref = "/dashboard";
   let coursesHref = "/dashboard/courses";
-  if (user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    const role = await getRoleForRedirect(user.id, user.email, user.user_metadata);
-    if (role === "super_admin") {
-      panelHref = "/admin/super";
-      coursesHref = "/admin/courses";
-    } else if (role === "admin") {
-      panelHref = "/admin";
-      coursesHref = "/admin/courses";
+
+  try {
+    const supabase = await createClient();
+    const { data: { user: u } } = await supabase.auth.getUser();
+    user = u ?? null;
+
+    if (user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const role = await getRoleForRedirect(user.id, (user as { email?: string }).email, (user as { user_metadata?: Record<string, unknown> }).user_metadata);
+        if (role === "super_admin") {
+          panelHref = "/admin/super";
+          coursesHref = "/admin/courses";
+        } else if (role === "admin") {
+          panelHref = "/admin";
+          coursesHref = "/admin/courses";
+        }
+      } catch {
+        // use default hrefs
+      }
     }
+  } catch {
+    // Supabase or auth failed (e.g. missing env on build) — render page with defaults
   }
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-muted/50 to-background">
-      <div className="container mx-auto px-4 sm:px-6 md:px-8 space-y-12 sm:space-y-16 md:space-y-20">
-        {/* Hero секция */}
+    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-muted/30 via-background to-muted/20">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6 md:px-8 space-y-16 sm:space-y-20 md:space-y-24 pb-16">
         <HeroSection user={user} coursesHref={coursesHref} />
 
-        {/* Промо-блок */}
         <PromoBanner />
 
-        {/* Информационный слайдер */}
         <InfoSlider />
 
-        {/* Поиск курсов - теперь для всех */}
-        <section>
-          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6 text-center">
+        <section className="scroll-mt-20">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-center text-foreground">
             Найти курс
           </h2>
           <LiveSearch placeholder="Поиск курсов по названию..." />
         </section>
 
-        {/* Преимущества платформы */}
         <BenefitsSection />
 
-        {/* Популярные курсы */}
-        <section>
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center">
+        <section className="scroll-mt-20">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-8 text-center text-foreground">
             Популярные курсы
           </h2>
           <Suspense fallback={<PopularCoursesSkeleton />}>
@@ -171,13 +178,10 @@ export default async function HomePage() {
           </Suspense>
         </section>
 
-        {/* Отзывы учеников */}
         <TestimonialsSection />
 
-        {/* Почему выбирают нас в Алматы */}
         <WhyAlmatySection />
 
-        {/* Финальный CTA */}
         <FinalCTASection user={user} />
       </div>
     </div>
