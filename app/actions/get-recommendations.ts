@@ -20,8 +20,8 @@ export async function getRecommendations(userId: string, limit: number = 4): Pro
     .select("course_id")
     .eq("user_id", userId);
 
-  const viewedCourseIds = (views || []).map((v) => v.course_id);
-  const enrolledCourseIds = (enrollments || []).map((e) => e.course_id);
+  const viewedCourseIds = (views || []).map((v: { course_id: string }) => v.course_id);
+  const enrolledCourseIds = (enrollments || []).map((e: { course_id: string }) => e.course_id);
   const excludedIds = [...new Set([...viewedCourseIds, ...enrolledCourseIds])];
 
   // Если пользователь просмотрел курсы, рекомендуем похожие по уровню
@@ -34,7 +34,7 @@ export async function getRecommendations(userId: string, limit: number = 4): Pro
       .select("level")
       .in("id", Array.from(viewedCourseIds));
 
-    const levels = new Set((viewedCourses || []).map((c) => c.level));
+    const levels = new Set((viewedCourses || []).map((c: { level: string }) => c.level));
 
     // Рекомендуем курсы того же уровня, которые пользователь не просматривал
     if (levels.size > 0) {
