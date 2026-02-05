@@ -255,7 +255,15 @@ export function BlockEditor({ type, content, onSave, onClose }: BlockEditorProps
             onChange={(url) => setLocal({ ...local, url })}
             onRemove={() => setLocal({ ...local, url: "" })}
             label="Перетащите изображение или нажмите для выбора"
+            maxWidth={800}
+            maxHeight={600}
+            quality={0.8}
           />
+          {c.url && c.url.startsWith("data:image") && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Размер: ~{Math.round((c.url.length * 3) / 4 / 1024)} КБ
+            </p>
+          )}
         </div>
         <div>
           <Label>Alt-текст (для доступности)</Label>
@@ -285,9 +293,21 @@ export function BlockEditor({ type, content, onSave, onClose }: BlockEditorProps
       setLocal({ ...local, images: next });
     };
     
+    // Вычисляем примерный размер блока
+    const estimatedSize = JSON.stringify(local).length;
+    const sizeKB = Math.round(estimatedSize / 1024);
+    const isLarge = sizeKB > 500; // Предупреждение если больше 500 КБ
+
     return (
       <div className="space-y-4">
-        <Label>Изображения слайдера (последовательность поз)</Label>
+        <div className="flex items-center justify-between">
+          <Label>Изображения слайдера (последовательность поз)</Label>
+          {isLarge && (
+            <span className="text-xs text-yellow-600 dark:text-yellow-400">
+              ⚠ Размер блока: {sizeKB} КБ (рекомендуется &lt;500 КБ)
+            </span>
+          )}
+        </div>
         <div className="space-y-2">
           {images.map((img, i) => (
             <Card key={i} className="p-3">
@@ -328,7 +348,15 @@ export function BlockEditor({ type, content, onSave, onClose }: BlockEditorProps
                       setLocal({ ...local, images: next });
                     }}
                     label={`Изображение ${i + 1}`}
+                    maxWidth={500}
+                    maxHeight={500}
+                    quality={0.75}
                   />
+                  {img.url && img.url.startsWith("data:image") && (
+                    <p className="text-xs text-muted-foreground">
+                      Размер: ~{Math.round((img.url.length * 3) / 4 / 1024)} КБ
+                    </p>
+                  )}
                   <Input
                     placeholder="Подпись к изображению (необязательно)"
                     value={img.caption ?? ""}
@@ -361,9 +389,15 @@ export function BlockEditor({ type, content, onSave, onClose }: BlockEditorProps
           variant="outline"
           size="sm"
           onClick={() => setLocal({ ...local, images: [...images, { url: "", alt: "", caption: "" }] })}
+          disabled={images.length >= 10}
         >
-          + Добавить изображение
+          + Добавить изображение {images.length >= 10 && "(макс. 10)"}
         </Button>
+        {images.length >= 10 && (
+          <p className="text-xs text-muted-foreground">
+            Достигнут лимит в 10 изображений для оптимизации производительности
+          </p>
+        )}
         <div className="flex gap-2">
           <Button onClick={handleSave}>Сохранить</Button>
           <Button variant="outline" onClick={onClose}>Отмена</Button>
