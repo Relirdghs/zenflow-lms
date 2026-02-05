@@ -42,7 +42,7 @@ export default async function AdminCoursesPage() {
         </Button>
       </div>
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {(courses ?? []).map((c) => (
+        {(courses ?? []).map((c: { id: string; title: string; description: string | null; level: string; is_public: boolean | null }) => (
           <Card key={c.id}>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between gap-2">

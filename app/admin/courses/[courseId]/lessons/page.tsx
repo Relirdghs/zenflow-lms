@@ -62,7 +62,7 @@ export default async function AdminLessonsPage({
         </Button>
       </div>
       <ul className="space-y-2">
-        {(lessons ?? []).map((lesson, i) => (
+        {(lessons ?? []).map((lesson: { id: string; title: string; duration_minutes: number }, i: number) => (
           <li key={lesson.id}>
             <Card>
               <CardContent className="py-3 px-3 sm:px-4 flex items-center gap-2 sm:gap-3">

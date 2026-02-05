@@ -29,7 +29,7 @@ export default async function NewCoursePage() {
   return (
     <div className="max-w-xl space-y-6">
       <h1 className="text-2xl font-semibold">Новый курс</h1>
-      <CourseForm createdBy={user.id} groups={(groups ?? []).map((g) => ({ id: g.id, name: g.name }))} />
+      <CourseForm createdBy={user.id} groups={(groups ?? []).map((g: { id: string; name: string }) => ({ id: g.id, name: g.name }))} />
     </div>
   );
 }

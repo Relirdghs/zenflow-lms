@@ -9,6 +9,7 @@ import { Users, BookOpen, MessageCircle, Shield } from "lucide-react";
 import { RoleUpdater } from "./role-updater";
 import { getUserRole } from "@/lib/auth/get-user-role";
 import { roleLabel } from "@/lib/role-label";
+import type { AppRole } from "@/types/database";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Кэширование на 30 секунд для статичных данных
@@ -85,7 +86,7 @@ async function UsersList() {
       </CardHeader>
       <CardContent>
         <div className="space-y-3 sm:space-y-4">
-          {(profiles ?? []).map((p) => (
+          {(profiles ?? []).map((p: { id: string; full_name: string | null; email: string | null; role: AppRole }) => (
             <div
               key={p.id}
               className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 rounded-lg border p-3"

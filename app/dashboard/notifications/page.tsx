@@ -22,7 +22,7 @@ export default async function NotificationsPage() {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  const unreadCount = (notifications || []).filter((n) => !n.is_read).length;
+  const unreadCount = (notifications || []).filter((n: { is_read?: boolean }) => !n.is_read).length;
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -46,7 +46,7 @@ export default async function NotificationsPage() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {notifications.map((notification) => (
+          {notifications.map((notification: { id: string; is_read: boolean; title?: string; created_at?: string; message?: string | null; link?: string | null }) => (
             <Card
               key={notification.id}
               className={notification.is_read ? "opacity-75" : ""}

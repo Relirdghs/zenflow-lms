@@ -54,8 +54,8 @@ export default async function DashboardPage() {
 
   const groupIds = [
     ...new Set([
-      ...(memberships ?? []).map((m) => m.group_id).filter(Boolean),
-      ...(enrollmentGroups ?? []).map((e) => e.group_id).filter(Boolean),
+      ...(memberships ?? []).map((m: { group_id: string | null }) => m.group_id).filter(Boolean),
+      ...(enrollmentGroups ?? []).map((e: { group_id: string | null }) => e.group_id).filter(Boolean),
     ] as string[]),
   ];
 
@@ -83,7 +83,7 @@ export default async function DashboardPage() {
 
   const averageProgress = enrollments && enrollments.length > 0
     ? Math.round(
-        enrollments.reduce((sum, e) => sum + Number(e.progress_percent || 0), 0) /
+        enrollments.reduce((sum: number, e: { progress_percent?: number | null }) => sum + Number(e.progress_percent || 0), 0) /
         enrollments.length
       )
     : 0;
@@ -204,7 +204,7 @@ export default async function DashboardPage() {
         <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Активные цели</h2>
         {goals && goals.length > 0 ? (
           <ul className="space-y-2">
-            {goals.map((g) => (
+            {goals.map((g: { id: string; title: string; deadline?: string | null }) => (
               <li key={g.id}>
                 <Link
                   href="/dashboard/goals"

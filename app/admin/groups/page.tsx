@@ -30,7 +30,7 @@ export default async function AdminGroupsPage() {
   }
   const { data: groups } = await query;
 
-  const groupIds = groups?.map((g) => g.id) ?? [];
+  const groupIds = groups?.map((g: { id: string }) => g.id) ?? [];
   const { data: goals } = groupIds.length > 0
     ? await supabase.from("goals").select("group_id").in("group_id", groupIds)
     : { data: [] };
@@ -39,13 +39,13 @@ export default async function AdminGroupsPage() {
     ? await supabase.from("group_members").select("group_id").in("group_id", groupIds)
     : { data: [] };
 
-  const goalsCount = (goals ?? []).reduce<Record<string, number>>((acc, g) => {
+  const goalsCount = ((goals ?? []) as { group_id: string | null }[]).reduce<Record<string, number>>((acc: Record<string, number>, g: { group_id: string | null }) => {
     if (!g.group_id) return acc;
     acc[g.group_id] = (acc[g.group_id] ?? 0) + 1;
     return acc;
   }, {});
 
-  const membersCount = (members ?? []).reduce<Record<string, number>>((acc, m) => {
+  const membersCount = ((members ?? []) as { group_id: string | null }[]).reduce<Record<string, number>>((acc: Record<string, number>, m: { group_id: string | null }) => {
     if (!m.group_id) return acc;
     acc[m.group_id] = (acc[m.group_id] ?? 0) + 1;
     return acc;
@@ -63,7 +63,7 @@ export default async function AdminGroupsPage() {
         </Button>
       </div>
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {(groups ?? []).map((g) => (
+        {(groups ?? []).map((g: { id: string; name: string; avatar_url: string | null }) => (
           <Card key={g.id}>
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">

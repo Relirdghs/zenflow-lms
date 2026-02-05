@@ -51,7 +51,7 @@ export default async function GroupDetailsPage({
     .select("user_id")
     .eq("group_id", groupId);
 
-  const memberIds = memberRows?.map((m) => m.user_id) ?? [];
+  const memberIds = memberRows?.map((m: { user_id: string }) => m.user_id) ?? [];
   const { data: memberProfiles } = memberIds.length > 0
     ? await supabase
         .from("profiles")
@@ -65,7 +65,7 @@ export default async function GroupDetailsPage({
     .select("course_id")
     .eq("group_id", groupId);
 
-  const courseIds = courseGroupRows?.map((c) => c.course_id) ?? [];
+  const courseIds = courseGroupRows?.map((c: { course_id: string }) => c.course_id) ?? [];
   const { data: assignedCourses } = courseIds.length > 0
     ? await supabase
         .from("courses")
@@ -132,7 +132,7 @@ export default async function GroupDetailsPage({
         
         <div className="mt-6 space-y-3">
           {groupGoals && groupGoals.length > 0 ? (
-            groupGoals.map((g) => (
+            groupGoals.map((g: { id: string; title: string; description: string | null; is_completed: boolean; deadline: string | null }) => (
               <Card key={g.id} className={g.is_completed ? "opacity-70" : ""}>
                 <CardHeader className="pb-2">
                   <div className="flex items-start gap-3">

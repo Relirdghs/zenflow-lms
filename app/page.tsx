@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -17,19 +17,19 @@ import { WhyAlmatySection } from "@/components/home/why-almaty-section";
 import { FinalCTASection } from "@/components/home/final-cta-section";
 
 // Lazy loading для тяжелых компонентов
-const PromoBanner = dynamic(() => import("@/components/promotions/promo-banner").then(m => ({ default: m.PromoBanner })), {
+const PromoBanner = nextDynamic(() => import("@/components/promotions/promo-banner").then(m => ({ default: m.PromoBanner })), {
   loading: () => <Skeleton className="h-32 w-full" />,
 });
 
-const InfoSlider = dynamic(() => import("@/components/promotions/info-slider").then(m => ({ default: m.InfoSlider })), {
+const InfoSlider = nextDynamic(() => import("@/components/promotions/info-slider").then(m => ({ default: m.InfoSlider })), {
   loading: () => <Skeleton className="h-64 w-full" />,
 });
 
-const LiveSearch = dynamic(() => import("@/components/search/live-search").then(m => ({ default: m.LiveSearch })), {
+const LiveSearch = nextDynamic(() => import("@/components/search/live-search").then(m => ({ default: m.LiveSearch })), {
   loading: () => <Skeleton className="h-10 w-full" />,
 });
 
-const TestimonialsSection = dynamic(() => import("@/components/home/testimonials-section").then(m => ({ default: m.TestimonialsSection })), {
+const TestimonialsSection = nextDynamic(() => import("@/components/home/testimonials-section").then(m => ({ default: m.TestimonialsSection })), {
   loading: () => <Skeleton className="h-64 w-full" />,
 });
 
@@ -54,7 +54,7 @@ async function PopularCourses({ userId, skipDb }: { userId?: string; skipDb?: bo
 
   return (
     <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-      {courses.map((course) => (
+      {courses.map((course: { id: string; title: string | null; cover_image: string | null; level: string; average_rating?: number | null; review_count?: number | null }) => (
         <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
           {course.cover_image && (
             <div className="relative h-48 bg-muted">

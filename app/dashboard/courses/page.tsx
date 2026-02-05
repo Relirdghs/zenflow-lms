@@ -60,8 +60,8 @@ export default async function DashboardCoursesPage() {
     const course = c ? (Array.isArray(c) ? c[0] : c) : null;
     return { id: e.id, progress_percent: e.progress_percent, courses: course };
   });
-  const enrolledIds = new Set(normalizedEnrollments.map((e) => e.courses?.id).filter(Boolean) as string[]);
-  const available = (allCourses ?? []).filter((c) => !enrolledIds.has(c.id));
+  const enrolledIds = new Set(normalizedEnrollments.map((e: { courses?: { id?: string } | null }) => e.courses?.id).filter(Boolean) as string[]);
+  const available = (allCourses ?? []).filter((c: { id: string }) => !enrolledIds.has(c.id));
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -79,7 +79,7 @@ export default async function DashboardCoursesPage() {
         <section>
           <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Записанные</h2>
           <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {normalizedEnrollments.map((e) => (
+            {normalizedEnrollments.map((e: { id: string; progress_percent: number; courses?: { id?: string; title?: string; cover_image?: string | null; description?: string | null; level?: string } | null }) => (
                 <Card key={e.id} className="overflow-hidden">
                   {e.courses?.cover_image && (
                     <div className="relative h-36 bg-muted">
@@ -129,7 +129,7 @@ export default async function DashboardCoursesPage() {
       <section>
         <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Доступные курсы</h2>
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {available.map((c) => (
+          {available.map((c: { id: string }) => (
             <CourseCard key={c.id} course={c as any} userId={user.id} />
           ))}
         </div>

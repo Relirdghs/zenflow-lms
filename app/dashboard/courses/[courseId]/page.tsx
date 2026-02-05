@@ -140,7 +140,7 @@ export default async function CoursePage({
   const isEnrolled = !!enrollment;
 
   // Calculate total duration
-  const totalDuration = (lessons ?? []).reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
+  const totalDuration = (lessons ?? []).reduce((sum: number, l: { duration_minutes?: number | null }) => sum + (l.duration_minutes || 0), 0);
 
   // Structured data for Course (JSON-LD) с гео-привязкой
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://zenflow.app";
@@ -271,7 +271,7 @@ export default async function CoursePage({
       <section>
         <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Уроки</h2>
         <ul className="space-y-2">
-          {(lessons ?? []).map((lesson, i) => (
+          {(lessons ?? []).map((lesson: { id: string; title: string; duration_minutes?: number | null }, i: number) => (
             <li key={lesson.id}>
               <Link
                 href={

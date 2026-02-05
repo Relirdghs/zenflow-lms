@@ -25,7 +25,7 @@ async function getStats() {
     const reviewsCount = reviews.length || FALLBACK_STATS.reviews;
     const averageRating =
       reviews.length > 0
-        ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+        ? reviews.reduce((sum: number, r: { rating?: number | null }) => sum + (r.rating || 0), 0) / reviews.length
         : FALLBACK_STATS.rating;
 
     return {

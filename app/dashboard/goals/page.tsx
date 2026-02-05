@@ -23,8 +23,8 @@ export default async function GoalsPage() {
 
   const groupIds = [
     ...new Set([
-      ...(memberships ?? []).map((m) => m.group_id).filter(Boolean),
-      ...(enrollmentGroups ?? []).map((e) => e.group_id).filter(Boolean),
+      ...(memberships ?? []).map((m: { group_id: string | null }) => m.group_id).filter(Boolean),
+      ...(enrollmentGroups ?? []).map((e: { group_id: string | null }) => e.group_id).filter(Boolean),
     ] as string[]),
   ];
 
@@ -48,7 +48,7 @@ export default async function GoalsPage() {
         <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Цели группы</h2>
         {groupGoals && groupGoals.length > 0 ? (
           <ul className="space-y-3">
-            {groupGoals.map((g) => (
+            {groupGoals.map((g: { id: string; title: string; is_completed: boolean; description?: string | null; deadline?: string | null }) => (
               <li key={g.id}>
                 <Card className={g.is_completed ? "opacity-70" : ""}>
                   <CardHeader className="pb-2">
