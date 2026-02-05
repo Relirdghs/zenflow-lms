@@ -1,9 +1,24 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Target } from "lucide-react";
+import { BookOpen, Target, TrendingUp, Calendar } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy loading для тяжелых компонентов
+const CourseRecommendations = dynamic(() => import("@/components/recommendations/course-recommendations").then(m => ({ default: m.CourseRecommendations })), {
+  loading: () => <Skeleton className="h-48 w-full" />,
+});
+
+const PromoBanner = dynamic(() => import("@/components/promotions/promo-banner").then(m => ({ default: m.PromoBanner })), {
+  loading: () => <Skeleton className="h-32 w-full" />,
+});
+
+// Кэширование дашборда на 30 секунд
+export const revalidate = 30;
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -54,11 +69,70 @@ export default async function DashboardPage() {
         .limit(3)
     : { data: null };
 
+  // Статистика пользователя
+  const { count: totalCourses } = await supabase
+    .from("enrollments")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  const { count: completedCourses } = await supabase
+    .from("enrollments")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .gte("progress_percent", 100);
+
+  const averageProgress = enrollments && enrollments.length > 0
+    ? Math.round(
+        enrollments.reduce((sum, e) => sum + Number(e.progress_percent || 0), 0) /
+        enrollments.length
+      )
+    : 0;
+
   return (
     <div className="space-y-6 sm:space-y-8">
       <div>
         <h1 className="text-xl sm:text-2xl font-semibold">Панель управления</h1>
         <p className="text-sm sm:text-base text-muted-foreground">Ваш прогресс и следующие шаги</p>
+      </div>
+
+      {/* Промо-блок */}
+      <PromoBanner />
+
+      {/* Статистика */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Всего курсов
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold">{totalCourses || 0}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Завершено
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold">{completedCourses || 0}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Средний прогресс
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold">{averageProgress}%</p>
+          </CardContent>
+        </Card>
       </div>
 
       <section>
@@ -135,6 +209,26 @@ export default async function DashboardPage() {
           </Card>
         )}
       </section>
+
+      {/* Рекомендации */}
+      <Suspense fallback={
+        <section>
+          <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Рекомендуем вам</h2>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <Skeleton className="h-36 w-full" />
+                <CardContent className="pt-4">
+                  <Skeleton className="h-4 w-3/4 mb-2" />
+                  <Skeleton className="h-9 w-full mt-2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      }>
+        <CourseRecommendations userId={user.id} />
+      </Suspense>
     </div>
   );
 }

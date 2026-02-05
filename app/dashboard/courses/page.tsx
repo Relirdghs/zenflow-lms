@@ -1,10 +1,22 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { courseLevelLabel } from "@/lib/course-level";
+import { CourseCard } from "@/components/courses/course-card";
+
+// Lazy loading для поиска
+const LiveSearch = dynamic(() => import("@/components/search/live-search").then(m => ({ default: m.LiveSearch })), {
+  loading: () => <Skeleton className="h-10 w-full" />,
+});
+
+// Кэширование на 30 секунд
+export const revalidate = 30;
 
 export default async function DashboardCoursesPage() {
   const supabase = await createClient();
@@ -13,29 +25,36 @@ export default async function DashboardCoursesPage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: enrollments } = await supabase
-    .from("enrollments")
-    .select(
-      `
-      id,
-      progress_percent,
-      courses (
+  // Параллельная загрузка данных для оптимизации
+  const [enrollmentsResult, allCoursesResult] = await Promise.all([
+    supabase
+      .from("enrollments")
+      .select(
+        `
         id,
-        title,
-        description,
-        cover_image,
-        level
+        progress_percent,
+        courses (
+          id,
+          title,
+          description,
+          cover_image,
+          level,
+          average_rating,
+          review_count
+        )
+      `
       )
-    `
-    )
-    .eq("user_id", user.id);
+      .eq("user_id", user.id),
+    supabase
+      .from("courses")
+      .select("id, title, description, cover_image, level, average_rating, review_count, location_city")
+      .order("title"),
+  ]);
 
-  const { data: allCourses } = await supabase
-    .from("courses")
-    .select("id, title, description, cover_image, level")
-    .order("title");
+  const enrollments = enrollmentsResult.data;
+  const allCourses = allCoursesResult.data;
 
-  type CourseInfo = { id: string; title: string; description: string | null; cover_image: string | null; level: string };
+  type CourseInfo = { id: string; title: string; description: string | null; cover_image: string | null; level: string; average_rating?: number; review_count?: number };
   const normalizedEnrollments = (enrollments ?? []).map((e: { id: string; progress_percent: number; courses?: CourseInfo | CourseInfo[] | null }) => {
     const c = e.courses;
     const course = c ? (Array.isArray(c) ? c[0] : c) : null;
@@ -51,6 +70,11 @@ export default async function DashboardCoursesPage() {
         <p className="text-sm sm:text-base text-muted-foreground">Ваши курсы и прогресс</p>
       </div>
 
+      {/* Поиск курсов */}
+      <div className="w-full">
+        <LiveSearch placeholder="Поиск курсов по названию..." />
+      </div>
+
       {normalizedEnrollments.length > 0 && (
         <section>
           <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Записанные</h2>
@@ -61,9 +85,11 @@ export default async function DashboardCoursesPage() {
                     <div className="relative h-36 bg-muted">
                       <Image
                         src={e.courses.cover_image}
-                        alt=""
+                        alt={`${e.courses.title || "Обложка курса"} — Курсы йоги в Алматы`}
                         fill
                         className="object-cover"
+                        loading="lazy"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     </div>
                   )}
@@ -104,34 +130,7 @@ export default async function DashboardCoursesPage() {
         <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Доступные курсы</h2>
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {available.map((c) => (
-            <Card key={c.id} className="overflow-hidden">
-              {c.cover_image && (
-                <div className="relative h-36 bg-muted">
-                  <Image
-                    src={c.cover_image}
-                    alt=""
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{c.title}</span>
-                  <Badge variant="secondary">{courseLevelLabel(c.level)}</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                  {c.description}
-                </p>
-                <Button asChild size="sm" variant="outline" className="w-full">
-                  <Link href={`/dashboard/courses/${c.id}/enroll`}>
-                    Записаться
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <CourseCard key={c.id} course={c as any} userId={user.id} />
           ))}
         </div>
         {available.length === 0 && (

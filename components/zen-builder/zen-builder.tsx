@@ -15,6 +15,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { BlockType } from "@/types/database";
 import { BlockRow } from "./block-row";
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import {
   Video,
   Type,
   Image as ImageIcon,
@@ -32,13 +47,6 @@ interface Block {
   id: string;
   type: BlockType;
   content: Record<string, unknown>;
-  order_index: number;
-}
-
-// Метаданные блока без content (для оптимизации загрузки)
-interface BlockMeta {
-  id: string;
-  type: BlockType;
   order_index: number;
 }
 
@@ -79,25 +87,6 @@ interface ZenBuilderProps {
   initialBlocks: Block[];
 }
 
-// Debounce функция для оптимизации автосохранения
-function useDebounce<T extends (...args: any[]) => void>(
-  callback: T,
-  delay: number
-): T {
-  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-
-  return useCallback(
-    ((...args: Parameters<T>) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        callback(...args);
-      }, delay);
-    }) as T,
-    [callback, delay]
-  );
-}
 
 export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
   // Кэш для загруженного content блоков
@@ -184,25 +173,41 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
     [supabase]
   );
 
-  const moveBlock = useCallback(
-    async (index: number, direction: "up" | "down") => {
-      const newIndex = direction === "up" ? index - 1 : index + 1;
-      if (newIndex < 0 || newIndex >= blocks.length) return;
+  // Настройка сенсоров для drag-and-drop
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-      const reordered = [...blocks];
-      const [moved] = reordered.splice(index, 1);
-      reordered.splice(newIndex, 0, moved);
+  // Обработчик завершения перетаскивания
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
 
+      if (!over || active.id === over.id) {
+        return;
+      }
+
+      const oldIndex = blocks.findIndex((block) => block.id === active.id);
+      const newIndex = blocks.findIndex((block) => block.id === over.id);
+
+      if (oldIndex === -1 || newIndex === -1) {
+        return;
+      }
+
+      const reordered = arrayMove(blocks, oldIndex, newIndex);
       setBlocks(reordered);
       setSaving(true);
-      
+
       // Оптимизация: batch update вместо цикла
       try {
         const updates = reordered.map((block, i) => ({
           id: block.id,
           order_index: i,
         }));
-        
+
         // Выполняем все обновления параллельно
         await Promise.all(
           updates.map((update) =>
@@ -215,6 +220,40 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
       } catch (error) {
         console.error("Error reordering blocks:", error);
         // Откатываем изменения при ошибке
+        setBlocks(blocks);
+      } finally {
+        setSaving(false);
+      }
+    },
+    [blocks, supabase]
+  );
+
+  // Старый метод moveBlock для обратной совместимости (используется в BlockRow)
+  const moveBlock = useCallback(
+    async (index: number, direction: "up" | "down") => {
+      const newIndex = direction === "up" ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= blocks.length) return;
+
+      const reordered = arrayMove(blocks, index, newIndex);
+      setBlocks(reordered);
+      setSaving(true);
+
+      try {
+        const updates = reordered.map((block, i) => ({
+          id: block.id,
+          order_index: i,
+        }));
+
+        await Promise.all(
+          updates.map((update) =>
+            supabase
+              .from("lesson_blocks")
+              .update({ order_index: update.order_index })
+              .eq("id", update.id)
+          )
+        );
+      } catch (error) {
+        console.error("Error reordering blocks:", error);
         setBlocks(blocks);
       } finally {
         setSaving(false);
@@ -246,38 +285,43 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
     [blocks.length, lessonId, supabase]
   );
 
-  // Оптимизированное обновление блока с debounce для автосохранения
-  const updateBlockImmediate = useCallback(
-    async (id: string, content: Record<string, unknown>) => {
-      // Обновляем кэш
-      contentCache.current.set(id, content);
+  // Debounce для автосохранения (500ms задержка) - используем useRef для хранения timeout
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  
+  // Обёртка для совместимости с существующим API с debounce
+  const updateBlock = useCallback(
+    (id: string, content: Record<string, unknown>) => {
+      // Очищаем предыдущий timeout
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
       
       // Оптимистичное обновление UI сразу
+      contentCache.current.set(id, content);
       setBlocks((prev) =>
         prev.map((b) => (b.id === id ? { ...b, content } : b))
       );
       
-      // Сохранение в БД
-      try {
-        await supabase.from("lesson_blocks").update({ content }).eq("id", id);
-      } catch (error) {
-        console.error("Error updating block:", error);
-        // При ошибке можно показать уведомление пользователю
-      }
+      // Debounce сохранение в БД
+      debounceTimeoutRef.current = setTimeout(async () => {
+        try {
+          await supabase.from("lesson_blocks").update({ content }).eq("id", id);
+        } catch (error) {
+          console.error("Error updating block:", error);
+        }
+      }, 500);
     },
     [supabase]
   );
-
-  // Debounce для автосохранения (500ms задержка)
-  const updateBlockDebounced = useDebounce(updateBlockImmediate, 500);
   
-  // Обёртка для совместимости с существующим API
-  const updateBlock = useCallback(
-    (id: string, content: Record<string, unknown>) => {
-      updateBlockDebounced(id, content);
-    },
-    [updateBlockDebounced]
-  );
+  // Очистка timeout при размонтировании
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const deleteBlock = useCallback(
     async (id: string) => {
@@ -368,7 +412,18 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
         {saving && <span className="text-xs sm:text-sm text-muted-foreground">Сохранение порядка...</span>}
       </div>
 
-      <ul className="space-y-2 sm:space-y-3">{blocksList}</ul>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={blocks.map((b) => b.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <ul className="space-y-2 sm:space-y-3">{blocksList}</ul>
+        </SortableContext>
+      </DndContext>
 
       {blocks.length === 0 && (
         <Card>
@@ -383,7 +438,7 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => addBlock(type)}
-                  className="min-h-[40px] sm:min-h-0 text-xs sm:text-sm"
+                  className="min-h-[44px] sm:min-h-0 text-xs sm:text-sm"
                 >
                   <Icon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">{label}</span>

@@ -33,6 +33,12 @@ export interface Course {
   created_by: string | null;
   created_at?: string;
   updated_at?: string;
+  average_rating?: number;
+  review_count?: number;
+  view_count?: number;
+  is_featured?: boolean;
+  seo_keywords?: string[];
+  location_city?: string;
 }
 
 export interface Lesson {
@@ -161,4 +167,63 @@ export interface LinkBlockContent {
   url: string;
   text: string;
   variant?: "primary" | "secondary" | "outline";
+}
+
+// New tables for features
+export interface Favorite {
+  id: string;
+  user_id: string;
+  course_id: string;
+  created_at?: string;
+}
+
+export interface Review {
+  id: string;
+  user_id: string;
+  course_id: string;
+  rating: number;
+  comment: string | null;
+  is_moderated: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Promotion {
+  id: string;
+  title: string;
+  description: string | null;
+  discount_percent: number | null;
+  coupon_code: string | null;
+  starts_at: string;
+  ends_at: string;
+  is_active: boolean;
+  created_at?: string;
+}
+
+export interface UserPreferences {
+  user_id: string;
+  theme: "light" | "dark" | "system";
+  notifications_enabled: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CourseView {
+  id: string;
+  user_id: string;
+  course_id: string;
+  viewed_at?: string;
+}
+
+export type NotificationType = "enrollment" | "lesson_completed" | "new_course" | "promotion" | "message";
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: NotificationType;
+  title: string;
+  message: string | null;
+  link: string | null;
+  is_read: boolean;
+  created_at?: string;
 }

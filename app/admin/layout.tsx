@@ -17,9 +17,12 @@ import {
   MessageCircle,
   Shield,
   LogOut,
+  Star,
+  Tag,
 } from "lucide-react";
 import { getUserRole } from "@/lib/auth/get-user-role";
 import { getRoleForRedirect } from "@/lib/auth/role-for-middleware";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 export default async function AdminLayout({
   children,
@@ -53,6 +56,8 @@ export default async function AdminLayout({
     { href: "/admin/courses", label: "Курсы", icon: BookOpen },
     { href: "/admin/groups", label: "Группы", icon: Users },
     { href: "/admin/chat", label: "Чат", icon: MessageCircle },
+    { href: "/admin/reviews", label: "Модерация отзывов", icon: Star },
+    { href: "/admin/promotions", label: "Промо-акции", icon: Tag },
   ];
   if (role === "super_admin") {
     nav.push({ href: "/admin/super", label: "Супер-админ", icon: Shield });
@@ -62,11 +67,12 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen min-h-[100dvh] flex flex-col md:flex-row bg-background">
-      {/* Кнопка профиля: только на десктопе; на мобильных — внутри бургер-меню */}
+      {/* Кнопки профиля и темы: только на десктопе */}
       <div
-        className="hidden md:block fixed z-50"
+        className="hidden md:flex fixed z-50 gap-2 items-center"
         style={{ top: "max(1rem, env(safe-area-inset-top))", right: "max(1rem, env(safe-area-inset-right))" }}
       >
+        <ThemeToggle userId={user.id} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-11 sm:w-11 shadow-md touch-target flex items-center justify-center">

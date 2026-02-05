@@ -76,6 +76,57 @@ const nextConfig: NextConfig = {
     // Оптимизация CSS
     optimizeCss: true,
   },
+
+  // Отключаем Turbopack и используем webpack (из-за проблем с шрифтами в Turbopack)
+  // Для использования webpack: npm run build -- --webpack
+  // Или установить переменную окружения: NEXT_PRIVATE_SKIP_TURBOPACK=1
+
+  // Оптимизация webpack для лучшего code splitting
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Оптимизация для клиентской сборки
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: "all",
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Vendor chunks
+            framework: {
+              name: "framework",
+              chunks: "all",
+              test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+              priority: 40,
+              enforce: true,
+            },
+            lib: {
+              test: /[\\/]node_modules[\\/]/,
+              name(module: { context: string }) {
+                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)?.[1];
+                return packageName ? `npm.${packageName.replace("@", "")}` : null;
+              },
+              priority: 30,
+              minChunks: 1,
+              reuseExistingChunk: true,
+            },
+            commons: {
+              name: "commons",
+              minChunks: 2,
+              priority: 20,
+            },
+            shared: {
+              name: "shared-chunk",
+              priority: 10,
+              minChunks: 2,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;

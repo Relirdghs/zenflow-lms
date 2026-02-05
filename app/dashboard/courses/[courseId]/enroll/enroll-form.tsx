@@ -45,7 +45,7 @@ export default function EnrollForm({
         {error && (
           <p className="text-sm text-destructive mb-3">{error}</p>
         )}
-        <Button onClick={handleEnroll} disabled={loading} className="w-full">
+        <Button onClick={handleEnroll} disabled={loading} className="w-full min-h-[44px] sm:min-h-0">
           {loading ? "Запись..." : "Записаться сейчас"}
         </Button>
       </CardContent>

@@ -10,9 +10,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BurgerNav } from "@/components/burger-nav";
-import { LayoutDashboard, BookOpen, Target, MessageCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, BookOpen, Target, MessageCircle, LogOut, Heart, Bell } from "lucide-react";
 import { getUserRole } from "@/lib/auth/get-user-role";
 import { getRoleForRedirect } from "@/lib/auth/role-for-middleware";
+import dynamic from "next/dynamic";
+import { NotificationBell } from "@/components/notifications/notification-bell";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
+
+// Lazy loading для чат-бота
+const FloatingChatbot = dynamic(() => import("@/components/chatbot/floating-chatbot").then(m => ({ default: m.FloatingChatbot })));
 
 export default async function DashboardLayout({
   children,
@@ -45,7 +51,9 @@ export default async function DashboardLayout({
   const nav = [
     { href: "/dashboard", label: "Обзор", icon: LayoutDashboard },
     { href: "/dashboard/courses", label: "Мои курсы", icon: BookOpen },
+    { href: "/dashboard/favorites", label: "Избранное", icon: Heart },
     { href: "/dashboard/goals", label: "Цели", icon: Target },
+    { href: "/dashboard/notifications", label: "Уведомления", icon: Bell },
     { href: "/dashboard/chat", label: "Чат", icon: MessageCircle },
   ];
 
@@ -83,11 +91,13 @@ export default async function DashboardLayout({
         </nav>
       </aside>
 
-      {/* Кнопка профиля: только на десктопе; на мобильных — внутри бургер-меню */}
+      {/* Кнопки профиля, уведомлений и темы: только на десктопе */}
       <div
-        className="hidden md:block fixed z-50 top-4 right-4"
+        className="hidden md:flex fixed z-50 top-4 right-4 gap-2 items-center"
         style={{ top: "max(1rem, env(safe-area-inset-top))", right: "max(1rem, env(safe-area-inset-right))" }}
       >
+        <ThemeToggle userId={user.id} />
+        <NotificationBell userId={user.id} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" className="rounded-full h-10 w-10 sm:h-11 sm:w-11 shadow-md touch-target flex items-center justify-center">
@@ -117,6 +127,9 @@ export default async function DashboardLayout({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Чат-бот */}
+      <FloatingChatbot />
 
       <main
         className="flex-1 p-4 sm:p-5 md:p-6 overflow-auto min-w-0 pt-4 md:pt-14"

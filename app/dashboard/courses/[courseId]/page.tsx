@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -7,6 +9,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { courseLevelLabel } from "@/lib/course-level";
 import { ChevronRight, Clock } from "lucide-react";
+import { FavoriteButton } from "@/components/favorites/favorite-button";
+import { ShareButton } from "@/components/share-button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import Image from "next/image";
+
+// Lazy loading для тяжелых компонентов
+const ReviewList = dynamic(() => import("@/components/reviews/review-list").then(m => ({ default: m.ReviewList })), {
+  loading: () => <Skeleton className="h-32 w-full" />,
+});
+
+const ReviewForm = dynamic(() => import("@/components/reviews/review-form").then(m => ({ default: m.ReviewForm })), {
+  loading: () => <Skeleton className="h-32 w-full" />,
+});
+
+const CourseRecommendations = dynamic(() => import("@/components/recommendations/course-recommendations").then(m => ({ default: m.CourseRecommendations })), {
+  loading: () => <Skeleton className="h-48 w-full" />,
+});
+
+// Кэширование страницы курса на 30 секунд
+export const revalidate = 30;
 
 // Generate dynamic metadata for SEO
 export async function generateMetadata({
@@ -19,7 +42,7 @@ export async function generateMetadata({
 
   const { data: course } = await supabase
     .from("courses")
-    .select("title, description, cover_image, level")
+    .select("title, description, cover_image, level, location_city")
     .eq("id", courseId)
     .single();
 
@@ -31,22 +54,35 @@ export async function generateMetadata({
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://zenflow.app";
 
+  const locationCity = course.location_city || "Алматы";
+  const titleWithLocation = `${course.title} — Йога в ${locationCity}`;
+  const descriptionWithLocation = course.description 
+    ? `${course.description} Курс йоги в ${locationCity}. Уровень: ${courseLevelLabel(course.level)}`
+    : `Курс йоги "${course.title}" в ${locationCity}. Уровень: ${courseLevelLabel(course.level)}. Онлайн обучение йоге с персональным прогрессом.`;
+
   return {
-    title: course.title,
-    description: course.description || `Курс йоги: ${course.title}. Уровень: ${courseLevelLabel(course.level)}`,
+    title: titleWithLocation,
+    description: descriptionWithLocation,
+    keywords: [
+      `йога ${locationCity}`,
+      `курсы йоги ${locationCity}`,
+      course.title,
+      courseLevelLabel(course.level),
+      "онлайн йога",
+    ],
     openGraph: {
-      title: course.title,
-      description: course.description || `Курс йоги: ${course.title}`,
+      title: titleWithLocation,
+      description: descriptionWithLocation,
       type: "article",
       url: `${siteUrl}/dashboard/courses/${courseId}`,
       images: course.cover_image
-        ? [{ url: course.cover_image, width: 1200, height: 630, alt: course.title }]
+        ? [{ url: course.cover_image, width: 1200, height: 630, alt: `${course.title} — Йога в ${locationCity}` }]
         : undefined,
     },
     twitter: {
       card: "summary_large_image",
-      title: course.title,
-      description: course.description || `Курс йоги: ${course.title}`,
+      title: titleWithLocation,
+      description: descriptionWithLocation,
       images: course.cover_image ? [course.cover_image] : undefined,
     },
   };
@@ -66,11 +102,25 @@ export default async function CoursePage({
 
   const { data: course } = await supabase
     .from("courses")
-    .select("id, title, description, cover_image, level")
+    .select("id, title, description, cover_image, level, average_rating, review_count, location_city")
     .eq("id", courseId)
     .single();
 
   if (!course) notFound();
+
+  // Отслеживание просмотра курса (для рекомендаций) - используем upsert для избежания дублирования
+  if (user) {
+    try {
+      await supabase
+        .from("course_views")
+        .upsert(
+          { user_id: user.id, course_id: courseId, viewed_at: new Date().toISOString() },
+          { onConflict: "user_id,course_id" }
+        );
+    } catch {
+      // Игнорируем ошибки
+    }
+  }
 
   const { data: enrollment } = await supabase
     .from("enrollments")
@@ -90,8 +140,9 @@ export default async function CoursePage({
   // Calculate total duration
   const totalDuration = (lessons ?? []).reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
 
-  // Structured data for Course (JSON-LD)
+  // Structured data for Course (JSON-LD) с гео-привязкой
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://zenflow.app";
+  const locationCity = course.location_city || "Алматы";
   const courseSchema = {
     "@context": "https://schema.org",
     "@type": "Course",
@@ -101,12 +152,32 @@ export default async function CoursePage({
       "@type": "Organization",
       name: "ZenFlow",
       url: siteUrl,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: locationCity,
+        addressRegion: "Алматинская область",
+        addressCountry: "KZ",
+      },
     },
     educationalLevel: courseLevelLabel(course.level),
     numberOfLessons: lessons?.length || 0,
     timeRequired: `PT${totalDuration}M`,
     image: course.cover_image || undefined,
     url: `${siteUrl}/dashboard/courses/${courseId}`,
+    audience: {
+      "@type": "Audience",
+      geographicArea: {
+        "@type": "City",
+        name: locationCity,
+      },
+    },
+    aggregateRating: course.average_rating && course.average_rating > 0 ? {
+      "@type": "AggregateRating",
+      ratingValue: course.average_rating,
+      reviewCount: course.review_count || 0,
+      bestRating: 5,
+      worstRating: 1,
+    } : undefined,
   };
 
   return (
@@ -117,19 +188,65 @@ export default async function CoursePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }}
       />
       <div className="space-y-4 sm:space-y-6">
+      {/* Хлебные крошки */}
+      <Breadcrumbs
+        items={[
+          { label: "Курсы", href: "/dashboard/courses" },
+          { label: `${course.title} (Алматы)` },
+        ]}
+      />
+
+      {/* Hero секция с cover image */}
+      {course.cover_image && (
+        <div className="relative h-48 sm:h-64 w-full rounded-lg overflow-hidden bg-muted">
+          <Image
+            src={course.cover_image}
+            alt={`${course.title} — Йога в Алматы`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, 100vw"
+            priority
+          />
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-semibold">{course.title}</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold">
+            {course.title} — Йога в {course.location_city || "Алматы"}
+          </h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">{course.description}</p>
-          <Badge variant="secondary" className="mt-2">
-            {courseLevelLabel(course.level)}
-          </Badge>
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <Badge variant="secondary">
+              {courseLevelLabel(course.level)}
+            </Badge>
+            {course.location_city && (
+              <Badge variant="outline">
+                📍 {course.location_city}
+              </Badge>
+            )}
+            {course.average_rating && course.average_rating > 0 && (
+              <Badge variant="outline">
+                ⭐ {course.average_rating.toFixed(1)} ({course.review_count || 0} отзывов)
+              </Badge>
+            )}
+          </div>
         </div>
-        {!isEnrolled && (
-          <Button asChild className="w-full sm:w-auto shrink-0 min-h-[44px] sm:min-h-0">
-            <Link href={`/dashboard/courses/${courseId}/enroll`}>Записаться</Link>
-          </Button>
-        )}
+        <div className="flex gap-2 shrink-0 flex-wrap">
+          {user && <FavoriteButton courseId={courseId} userId={user.id} variant="outline" size="sm" />}
+          <ShareButton
+            title={course.title}
+            text={course.description || undefined}
+            url={`${process.env.NEXT_PUBLIC_SITE_URL || ""}/dashboard/courses/${courseId}`}
+            variant="outline"
+            size="sm"
+          />
+          {!isEnrolled && (
+            <Button asChild className="w-full sm:w-auto min-h-[44px] sm:min-h-0">
+              <Link href={`/dashboard/courses/${courseId}/enroll`}>Записаться</Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       {isEnrolled && (
@@ -185,6 +302,31 @@ export default async function CoursePage({
           <p className="text-muted-foreground">Уроков пока нет.</p>
         )}
       </section>
+
+      {/* Отзывы */}
+      <section>
+        <h2 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Отзывы</h2>
+        <Suspense fallback={<Skeleton className="h-32 w-full" />}>
+          <ReviewList courseId={courseId} />
+        </Suspense>
+        {user && (
+          <Card className="mt-4">
+            <CardContent className="pt-6">
+              <h3 className="font-semibold mb-4">Оставить отзыв</h3>
+              <ReviewForm userId={user.id} courseId={courseId} />
+            </CardContent>
+          </Card>
+        )}
+      </section>
+
+      {/* Рекомендации */}
+      {user && (
+        <section>
+          <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+            <CourseRecommendations userId={user.id} />
+          </Suspense>
+        </section>
+      )}
       </div>
     </>
   );
