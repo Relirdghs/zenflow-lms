@@ -17,7 +17,6 @@ const ZenBuilder = dynamic(
         <Skeleton className="h-12 w-48" />
       </div>
     ),
-    ssr: false,
   }
 );
 
