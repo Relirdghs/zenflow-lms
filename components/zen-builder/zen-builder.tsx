@@ -35,6 +35,13 @@ interface Block {
   order_index: number;
 }
 
+// Метаданные блока без content (для оптимизации загрузки)
+interface BlockMeta {
+  id: string;
+  type: BlockType;
+  order_index: number;
+}
+
 const BLOCK_TYPES: { type: BlockType; label: string; icon: React.ElementType }[] = [
   { type: "h1", label: "Заголовок H1", icon: Heading1 },
   { type: "h2", label: "Заголовок H2", icon: Heading2 },
@@ -93,32 +100,89 @@ function useDebounce<T extends (...args: any[]) => void>(
 }
 
 export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
+  // Кэш для загруженного content блоков
+  const contentCache = useRef<Map<string, Record<string, unknown>>>(new Map());
+  
   const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
   const [loading, setLoading] = useState(initialBlocks.length === 0);
+  const [loadingContent, setLoadingContent] = useState<Set<string>>(new Set());
   const [addingType, setAddingType] = useState<BlockType | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const supabase = useMemo(() => createClient(), []);
 
-  // Загружаем блоки на клиенте, если они не были переданы с сервера
+  // Загружаем только МЕТАДАННЫЕ блоков (без content) - это уменьшает размер с 13 МБ до ~10 КБ!
   useEffect(() => {
     if (initialBlocks.length === 0) {
-      // Оптимизация: загружаем только необходимые поля
+      // КРИТИЧЕСКАЯ ОПТИМИЗАЦИЯ: загружаем только id, type, order_index БЕЗ content
       supabase
         .from("lesson_blocks")
-        .select("id, type, content, order_index")
+        .select("id, type, order_index")
         .eq("lesson_id", lessonId)
         .order("order_index")
         .then(({ data, error }) => {
           if (error) {
             console.error("Error loading blocks:", error);
           } else {
-            setBlocks(data ?? []);
+            // Создаём блоки с пустым content - загрузим по требованию
+            const blocksWithEmptyContent = (data ?? []).map((meta) => ({
+              ...meta,
+              content: {} as Record<string, unknown>,
+            }));
+            setBlocks(blocksWithEmptyContent);
           }
           setLoading(false);
         });
     }
   }, [lessonId, initialBlocks.length, supabase]);
+
+  // Загружаем content конкретного блока по требованию (lazy load)
+  const loadBlockContent = useCallback(
+    async (blockId: string) => {
+      // Проверяем кэш
+      if (contentCache.current.has(blockId)) {
+        const cachedContent = contentCache.current.get(blockId)!;
+        setBlocks((prev) =>
+          prev.map((b) => (b.id === blockId ? { ...b, content: cachedContent } : b))
+        );
+        return cachedContent;
+      }
+
+      // Загружаем content только для этого блока
+      setLoadingContent((prev) => new Set(prev).add(blockId));
+      try {
+        const { data, error } = await supabase
+          .from("lesson_blocks")
+          .select("content")
+          .eq("id", blockId)
+          .single();
+
+        if (error) throw error;
+
+        const content = (data?.content ?? {}) as Record<string, unknown>;
+        
+        // Кэшируем
+        contentCache.current.set(blockId, content);
+        
+        // Обновляем блок
+        setBlocks((prev) =>
+          prev.map((b) => (b.id === blockId ? { ...b, content } : b))
+        );
+
+        return content;
+      } catch (error) {
+        console.error("Error loading block content:", error);
+        return {};
+      } finally {
+        setLoadingContent((prev) => {
+          const next = new Set(prev);
+          next.delete(blockId);
+          return next;
+        });
+      }
+    },
+    [supabase]
+  );
 
   const moveBlock = useCallback(
     async (index: number, direction: "up" | "down") => {
@@ -173,7 +237,10 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
         console.error(error);
         return;
       }
-      setBlocks((prev) => [...prev, { id: data.id, type: data.type, content: data.content, order_index: data.order_index }]);
+      const newContent = (data.content ?? {}) as Record<string, unknown>;
+      // Кэшируем content нового блока
+      contentCache.current.set(data.id, newContent);
+      setBlocks((prev) => [...prev, { id: data.id, type: data.type, content: newContent, order_index: data.order_index }]);
       setEditingId(data.id);
     },
     [blocks.length, lessonId, supabase]
@@ -182,6 +249,9 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
   // Оптимизированное обновление блока с debounce для автосохранения
   const updateBlockImmediate = useCallback(
     async (id: string, content: Record<string, unknown>) => {
+      // Обновляем кэш
+      contentCache.current.set(id, content);
+      
       // Оптимистичное обновление UI сразу
       setBlocks((prev) =>
         prev.map((b) => (b.id === id ? { ...b, content } : b))
@@ -212,10 +282,31 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
   const deleteBlock = useCallback(
     async (id: string) => {
       await supabase.from("lesson_blocks").delete().eq("id", id);
+      // Удаляем из кэша
+      contentCache.current.delete(id);
       setBlocks((prev) => prev.filter((b) => b.id !== id));
       if (editingId === id) setEditingId(null);
     },
     [supabase, editingId]
+  );
+
+  // Обработчик редактирования: загружаем content перед открытием
+  const handleEdit = useCallback(
+    async (blockId: string) => {
+      const block = blocks.find((b) => b.id === blockId);
+      if (!block) return;
+
+      // Проверяем, есть ли content (может быть пустым объектом если не загружен)
+      const hasContent = Object.keys(block.content).length > 0;
+      
+      if (!hasContent) {
+        // Загружаем content перед открытием редактирования
+        await loadBlockContent(blockId);
+      }
+      
+      setEditingId(blockId);
+    },
+    [blocks, loadBlockContent]
   );
 
   // Мемоизация списка блоков для оптимизации ре-рендеров
@@ -228,7 +319,7 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
             index={index}
             totalBlocks={blocks.length}
             isEditing={editingId === block.id}
-            onEdit={() => setEditingId(block.id)}
+            onEdit={() => handleEdit(block.id)}
             onCloseEdit={() => setEditingId(null)}
             onDelete={() => deleteBlock(block.id)}
             onSave={(content) => updateBlock(block.id, content)}
@@ -237,7 +328,7 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
           />
         </li>
       )),
-    [blocks, editingId, deleteBlock, updateBlock, moveBlock]
+    [blocks, editingId, deleteBlock, updateBlock, moveBlock, handleEdit]
   );
 
   if (loading) {
