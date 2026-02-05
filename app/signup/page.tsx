@@ -92,6 +92,7 @@ export default function SignupPage() {
                 placeholder="Ваше имя"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
+                autoComplete="name"
                 className="min-h-[44px] sm:min-h-0"
               />
             </div>
@@ -102,8 +103,18 @@ export default function SignupPage() {
                 type="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (error && e.target.value) setError(null);
+                }}
+                onBlur={(e) => {
+                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  if (e.target.value && !emailRegex.test(e.target.value)) {
+                    setError("Введите корректный email адрес");
+                  }
+                }}
                 required
+                autoComplete="email"
                 className="min-h-[44px] sm:min-h-0"
               />
             </div>
@@ -113,11 +124,21 @@ export default function SignupPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error && e.target.value.length >= 6) setError(null);
+                }}
+                onBlur={(e) => {
+                  if (e.target.value && e.target.value.length < 6) {
+                    setError("Пароль должен содержать минимум 6 символов");
+                  }
+                }}
                 required
                 minLength={6}
+                autoComplete="new-password"
                 className="min-h-[44px] sm:min-h-0"
               />
+              <p className="text-xs text-muted-foreground">Минимум 6 символов</p>
             </div>
             <Button type="submit" className="w-full min-h-[44px] sm:min-h-0" disabled={loading}>
               {loading ? "Создание аккаунта…" : "Зарегистрироваться"}

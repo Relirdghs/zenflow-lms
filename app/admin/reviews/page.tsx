@@ -97,9 +97,21 @@ export default async function AdminReviewsPage() {
                 </CardHeader>
                 <CardContent>
                   {review.comment && (
-                    <p className="text-sm text-muted-foreground mb-4">{review.comment}</p>
+                    <div className="mb-4 p-4 bg-muted rounded-lg border">
+                      <p className="text-sm font-medium mb-2">Текст отзыва:</p>
+                      <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                        {review.comment}
+                      </p>
+                    </div>
                   )}
-                  <ModerateButtons reviewId={review.id} />
+                  {!review.comment && (
+                    <p className="text-sm text-muted-foreground mb-4 italic">
+                      Отзыв без текстового комментария
+                    </p>
+                  )}
+                  <div className="flex gap-2 flex-wrap">
+                    <ModerateButtons reviewId={review.id} />
+                  </div>
                 </CardContent>
               </Card>
             );

@@ -98,6 +98,29 @@ export default async function DashboardPage() {
       {/* Промо-блок */}
       <PromoBanner />
 
+      {/* Общий прогресс */}
+      {enrollments && enrollments.length > 0 && (
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-base sm:text-lg">Общий прогресс обучения</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {completedCourses || 0} из {totalCourses || 0} курсов завершено
+                </span>
+                <span className="text-lg font-bold text-primary">{averageProgress}%</span>
+              </div>
+              <Progress value={averageProgress} className="h-3" />
+              <p className="text-xs text-muted-foreground">
+                Средний прогресс по всем курсам
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Статистика */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <Card>

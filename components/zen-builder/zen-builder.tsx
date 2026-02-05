@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { BlockType } from "@/types/database";
 import { BlockRow } from "./block-row";
 import {
@@ -389,28 +390,36 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 flex-wrap">
-        <Select
-          value={addingType ?? ""}
-          onValueChange={(v) => (v ? addBlock(v as BlockType) : setAddingType(null))}
-        >
-          <SelectTrigger className="w-full sm:w-[240px] min-h-[44px] sm:min-h-0">
-            <SelectValue placeholder="Добавить блок" />
-          </SelectTrigger>
-          <SelectContent>
-            {BLOCK_TYPES.map(({ type, label, icon: Icon }) => (
-              <SelectItem key={type} value={type} className="min-h-[44px] sm:min-h-0">
-                <span className="flex items-center gap-2">
-                  <Icon className="h-4 w-4" />
-                  {label}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {saving && <span className="text-xs sm:text-sm text-muted-foreground">Сохранение порядка...</span>}
-      </div>
+    <TooltipProvider>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 flex-wrap">
+          <Select
+            value={addingType ?? ""}
+            onValueChange={(v) => (v ? addBlock(v as BlockType) : setAddingType(null))}
+          >
+            <SelectTrigger className="w-full sm:w-[240px] min-h-[44px] sm:min-h-0">
+              <SelectValue placeholder="Добавить блок" />
+            </SelectTrigger>
+            <SelectContent>
+              {BLOCK_TYPES.map(({ type, label, icon: Icon }) => (
+                <Tooltip key={type}>
+                  <TooltipTrigger asChild>
+                    <SelectItem value={type} className="min-h-[44px] sm:min-h-0">
+                      <span className="flex items-center gap-2">
+                        <Icon className="h-4 w-4" />
+                        {label}
+                      </span>
+                    </SelectItem>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{label}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </SelectContent>
+          </Select>
+          {saving && <span className="text-xs sm:text-sm text-muted-foreground">Сохранение порядка...</span>}
+        </div>
 
       <DndContext
         sensors={sensors}
@@ -433,22 +442,29 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
             </p>
             <div className="flex flex-wrap gap-2 justify-center">
               {BLOCK_TYPES.map(({ type, label, icon: Icon }) => (
-                <Button
-                  key={type}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addBlock(type)}
-                  className="min-h-[44px] sm:min-h-0 text-xs sm:text-sm"
-                >
-                  <Icon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline">{label}</span>
-                  <span className="sm:hidden">{label.split(' ')[0]}</span>
-                </Button>
+                <Tooltip key={type}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addBlock(type)}
+                      className="min-h-[44px] sm:min-h-0 text-xs sm:text-sm"
+                    >
+                      <Icon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">{label}</span>
+                      <span className="sm:hidden">{label.split(' ')[0]}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{label}</p>
+                  </TooltipContent>
+                </Tooltip>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

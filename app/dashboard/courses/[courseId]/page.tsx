@@ -13,6 +13,8 @@ import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { ShareButton } from "@/components/share-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { FloatingEnrollButton } from "@/components/courses/floating-enroll-button";
+import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
 
 // Lazy loading для тяжелых компонентов
@@ -249,23 +251,19 @@ export default async function CoursePage({
         </div>
       </div>
 
-      {isEnrolled && (
-        <Card>
+      {isEnrolled && enrollment && (
+        <Card className="border-primary/20">
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Ваш прогресс</span>
-              <span className="text-sm text-muted-foreground">
-                {Math.round(Number(enrollment?.progress_percent ?? 0))}%
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-base font-semibold">Ваш прогресс по курсу</span>
+              <span className="text-base font-bold text-primary">
+                {Math.round(Number(enrollment.progress_percent ?? 0))}%
               </span>
             </div>
-            <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full bg-primary rounded-full transition-all"
-                style={{
-                  width: `${enrollment?.progress_percent ?? 0}%`,
-                }}
-              />
-            </div>
+            <Progress value={Number(enrollment.progress_percent ?? 0)} className="h-3" />
+            <p className="text-xs text-muted-foreground mt-2">
+              Продолжайте обучение, чтобы завершить курс
+            </p>
           </CardContent>
         </Card>
       )}
@@ -328,6 +326,9 @@ export default async function CoursePage({
         </section>
       )}
       </div>
+
+      {/* Плавающая кнопка "Записаться" на мобильных */}
+      {user && <FloatingEnrollButton courseId={courseId} isEnrolled={isEnrolled} />}
     </>
   );
 }

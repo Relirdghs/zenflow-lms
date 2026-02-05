@@ -16,9 +16,11 @@ import { getRoleForRedirect } from "@/lib/auth/role-for-middleware";
 import dynamic from "next/dynamic";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { NavItem } from "@/components/dashboard/nav-item";
 
-// Lazy loading для чат-бота
-const FloatingChatbot = dynamic(() => import("@/components/chatbot/floating-chatbot").then(m => ({ default: m.FloatingChatbot })));
+const CompactSearch = dynamic(() => import("@/components/search/live-search").then(m => ({ default: m.LiveSearch })), {
+  loading: () => <div className="h-10 w-full bg-muted animate-pulse rounded-md" />,
+});
 
 export default async function DashboardLayout({
   children,
@@ -75,18 +77,19 @@ export default async function DashboardLayout({
       />
 
       {/* Боковая панель: только на десктопе */}
-      <aside className="hidden md:flex md:w-56 shrink-0 border-r border-border p-4 flex-col gap-2">
+      <aside className="hidden md:flex md:w-64 shrink-0 border-r border-border p-4 flex-col gap-4">
         <Link href="/dashboard" className="text-xl font-semibold text-primary mb-2">
           ZenFlow
         </Link>
+        
+        {/* Компактный поиск в сайдбаре */}
+        <div className="mb-2">
+          <CompactSearch placeholder="Поиск курсов..." showFilters={false} />
+        </div>
+
         <nav className="flex flex-col gap-1 flex-1">
-          {nav.map(({ href, label, icon: Icon }) => (
-            <Button key={href} variant="ghost" asChild className="justify-start">
-              <Link href={href} className="flex items-center">
-                <Icon className="mr-2 h-4 w-4 shrink-0" />
-                {label}
-              </Link>
-            </Button>
+          {nav.map(({ href, label, icon }) => (
+            <NavItem key={href} href={href} label={label} icon={icon} />
           ))}
         </nav>
       </aside>
@@ -127,9 +130,6 @@ export default async function DashboardLayout({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-
-      {/* Чат-бот */}
-      <FloatingChatbot />
 
       <main
         className="flex-1 p-4 sm:p-5 md:p-6 overflow-auto min-w-0 pt-4 md:pt-14"

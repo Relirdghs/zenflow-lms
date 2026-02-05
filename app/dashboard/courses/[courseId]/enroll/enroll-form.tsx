@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
 
 export default function EnrollForm({
   courseId,
@@ -30,8 +31,10 @@ export default function EnrollForm({
     if (error) {
       console.error(error);
       setError("Не удалось записаться на курс. Попробуйте позже.");
+      toast.error("Ошибка при записи на курс");
       return;
     }
+    toast.success("Вы успешно записались на курс!");
     router.push(`/dashboard/courses/${courseId}`);
     router.refresh();
   }

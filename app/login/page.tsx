@@ -70,8 +70,12 @@ function LoginForm() {
                 type="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (error && e.target.value) setError(null);
+                }}
                 required
+                autoComplete="email"
                 className="min-h-[44px] sm:min-h-0"
               />
             </div>
@@ -81,8 +85,12 @@ function LoginForm() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error && e.target.value) setError(null);
+                }}
                 required
+                autoComplete="current-password"
                 className="min-h-[44px] sm:min-h-0"
               />
             </div>
