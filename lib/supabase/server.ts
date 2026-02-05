@@ -11,7 +11,9 @@ function stubClient() {
     order: () => chain(),
     limit: () => chain(),
     single: () => empty,
-    then: (r: (v: { data: any[]; error: null }) => any) => Promise.resolve(r(emptyList)),
+    then(onFulfill: (v: { data: any[]; error: null }) => any) {
+      Promise.resolve().then(() => onFulfill(emptyList));
+    },
     catch: () => Promise.resolve(emptyList),
   });
   return {
@@ -28,7 +30,9 @@ function stubClient() {
       order: () => chain(),
       limit: () => chain(),
       single: () => empty,
-      then: (r: (v: { data: any[]; count?: number; error: null }) => any) => Promise.resolve(r(emptyList)),
+      then(onFulfill: (v: { data: any[]; count?: number; error: null }) => any) {
+        Promise.resolve().then(() => onFulfill(emptyList));
+      },
       catch: () => Promise.resolve(emptyList),
     }),
   };

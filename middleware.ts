@@ -8,6 +8,10 @@ const ADMIN_PREFIX = "/admin";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  if (pathname === "/") {
+    return NextResponse.next({ request });
+  }
+
   const isDashboard = pathname.startsWith(DASHBOARD_PREFIX);
   const isAdmin = pathname.startsWith(ADMIN_PREFIX);
 
