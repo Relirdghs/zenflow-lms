@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -72,17 +72,38 @@ interface ZenBuilderProps {
   initialBlocks: Block[];
 }
 
+// Debounce функция для оптимизации автосохранения
+function useDebounce<T extends (...args: any[]) => void>(
+  callback: T,
+  delay: number
+): T {
+  const timeoutRef = useRef<NodeJS.Timeout>();
+
+  return useCallback(
+    ((...args: Parameters<T>) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        callback(...args);
+      }, delay);
+    }) as T,
+    [callback, delay]
+  );
+}
+
 export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
   const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
   const [loading, setLoading] = useState(initialBlocks.length === 0);
   const [addingType, setAddingType] = useState<BlockType | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   // Загружаем блоки на клиенте, если они не были переданы с сервера
   useEffect(() => {
     if (initialBlocks.length === 0) {
+      // Оптимизация: загружаем только необходимые поля
       supabase
         .from("lesson_blocks")
         .select("id, type, content, order_index")
@@ -110,13 +131,30 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
 
       setBlocks(reordered);
       setSaving(true);
-      for (let i = 0; i < reordered.length; i++) {
-        await supabase
-          .from("lesson_blocks")
-          .update({ order_index: i })
-          .eq("id", reordered[i].id);
+      
+      // Оптимизация: batch update вместо цикла
+      try {
+        const updates = reordered.map((block, i) => ({
+          id: block.id,
+          order_index: i,
+        }));
+        
+        // Выполняем все обновления параллельно
+        await Promise.all(
+          updates.map((update) =>
+            supabase
+              .from("lesson_blocks")
+              .update({ order_index: update.order_index })
+              .eq("id", update.id)
+          )
+        );
+      } catch (error) {
+        console.error("Error reordering blocks:", error);
+        // Откатываем изменения при ошибке
+        setBlocks(blocks);
+      } finally {
+        setSaving(false);
       }
-      setSaving(false);
     },
     [blocks, supabase]
   );
@@ -141,14 +179,34 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
     [blocks.length, lessonId, supabase]
   );
 
-  const updateBlock = useCallback(
+  // Оптимизированное обновление блока с debounce для автосохранения
+  const updateBlockImmediate = useCallback(
     async (id: string, content: Record<string, unknown>) => {
-      await supabase.from("lesson_blocks").update({ content }).eq("id", id);
+      // Оптимистичное обновление UI сразу
       setBlocks((prev) =>
         prev.map((b) => (b.id === id ? { ...b, content } : b))
       );
+      
+      // Сохранение в БД
+      try {
+        await supabase.from("lesson_blocks").update({ content }).eq("id", id);
+      } catch (error) {
+        console.error("Error updating block:", error);
+        // При ошибке можно показать уведомление пользователю
+      }
     },
     [supabase]
+  );
+
+  // Debounce для автосохранения (500ms задержка)
+  const updateBlockDebounced = useDebounce(updateBlockImmediate, 500);
+  
+  // Обёртка для совместимости с существующим API
+  const updateBlock = useCallback(
+    (id: string, content: Record<string, unknown>) => {
+      updateBlockDebounced(id, content);
+    },
+    [updateBlockDebounced]
   );
 
   const deleteBlock = useCallback(
@@ -158,6 +216,28 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
       if (editingId === id) setEditingId(null);
     },
     [supabase, editingId]
+  );
+
+  // Мемоизация списка блоков для оптимизации ре-рендеров
+  const blocksList = useMemo(
+    () =>
+      blocks.map((block, index) => (
+        <li key={block.id}>
+          <BlockRow
+            block={block}
+            index={index}
+            totalBlocks={blocks.length}
+            isEditing={editingId === block.id}
+            onEdit={() => setEditingId(block.id)}
+            onCloseEdit={() => setEditingId(null)}
+            onDelete={() => deleteBlock(block.id)}
+            onSave={(content) => updateBlock(block.id, content)}
+            onMoveUp={() => moveBlock(index, "up")}
+            onMoveDown={() => moveBlock(index, "down")}
+          />
+        </li>
+      )),
+    [blocks, editingId, deleteBlock, updateBlock, moveBlock]
   );
 
   if (loading) {
@@ -197,24 +277,7 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
         {saving && <span className="text-xs sm:text-sm text-muted-foreground">Сохранение порядка...</span>}
       </div>
 
-      <ul className="space-y-2 sm:space-y-3">
-        {blocks.map((block, index) => (
-          <li key={block.id}>
-            <BlockRow
-              block={block}
-              index={index}
-              totalBlocks={blocks.length}
-              isEditing={editingId === block.id}
-              onEdit={() => setEditingId(block.id)}
-              onCloseEdit={() => setEditingId(null)}
-              onDelete={() => deleteBlock(block.id)}
-              onSave={(content) => updateBlock(block.id, content)}
-              onMoveUp={() => moveBlock(index, "up")}
-              onMoveDown={() => moveBlock(index, "down")}
-            />
-          </li>
-        ))}
-      </ul>
+      <ul className="space-y-2 sm:space-y-3">{blocksList}</ul>
 
       {blocks.length === 0 && (
         <Card>
