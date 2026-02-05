@@ -32,33 +32,37 @@ export default async function ZenBuilderPage({
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: lesson } = await supabase
-    .from("lessons")
-    .select("id, title, course_id")
-    .eq("id", lessonId)
-    .eq("course_id", courseId)
-    .single();
+  // Параллельная загрузка данных для оптимизации
+  const [lessonResult, courseResult, profileResult] = await Promise.all([
+    supabase
+      .from("lessons")
+      .select("id, title, course_id")
+      .eq("id", lessonId)
+      .eq("course_id", courseId)
+      .single(),
+    supabase
+      .from("courses")
+      .select("created_by")
+      .eq("id", courseId)
+      .single(),
+    supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single(),
+  ]);
+
+  const { data: lesson } = lessonResult;
   if (!lesson) notFound();
 
-  const { data: course } = await supabase
-    .from("courses")
-    .select("created_by")
-    .eq("id", courseId)
-    .single();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  const { data: course } = courseResult;
+  const { data: profile } = profileResult;
   const role = getUserRole(profile?.role ?? null, user);
   const isSuperAdmin = role === "super_admin";
   if (course?.created_by !== user.id && !isSuperAdmin) notFound();
 
-  const { data: blocks } = await supabase
-    .from("lesson_blocks")
-    .select("id, type, content, order_index")
-    .eq("lesson_id", lessonId)
-    .order("order_index");
+  // НЕ загружаем блоки здесь - ZenBuilder загрузит их сам на клиенте
+  // Это уменьшает размер RSC payload с нескольких МБ до нескольких КБ
 
   return (
     <div className="space-y-6">
@@ -70,7 +74,7 @@ export default async function ZenBuilderPage({
       </div>
       <ZenBuilder
         lessonId={lessonId}
-        initialBlocks={blocks ?? []}
+        initialBlocks={[]}
       />
     </div>
   );

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -73,10 +74,30 @@ interface ZenBuilderProps {
 
 export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
   const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
+  const [loading, setLoading] = useState(initialBlocks.length === 0);
   const [addingType, setAddingType] = useState<BlockType | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const supabase = createClient();
+
+  // Загружаем блоки на клиенте, если они не были переданы с сервера
+  useEffect(() => {
+    if (initialBlocks.length === 0) {
+      supabase
+        .from("lesson_blocks")
+        .select("id, type, content, order_index")
+        .eq("lesson_id", lessonId)
+        .order("order_index")
+        .then(({ data, error }) => {
+          if (error) {
+            console.error("Error loading blocks:", error);
+          } else {
+            setBlocks(data ?? []);
+          }
+          setLoading(false);
+        });
+    }
+  }, [lessonId, initialBlocks.length, supabase]);
 
   const moveBlock = useCallback(
     async (index: number, direction: "up" | "down") => {
@@ -138,6 +159,19 @@ export function ZenBuilder({ lessonId, initialBlocks }: ZenBuilderProps) {
     },
     [supabase, editingId]
   );
+
+  if (loading) {
+    return (
+      <div className="space-y-4 sm:space-y-6">
+        <Skeleton className="h-10 w-full sm:w-[240px]" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-32 w-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
