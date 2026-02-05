@@ -1,9 +1,25 @@
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ZenBuilder } from "@/components/zen-builder/zen-builder";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getUserRole } from "@/lib/auth/get-user-role";
+
+// Lazy load ZenBuilder (only used by admins, saves ~100KB from main bundle)
+const ZenBuilder = dynamic(
+  () => import("@/components/zen-builder/zen-builder").then((mod) => mod.ZenBuilder),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-12 w-48" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 export default async function ZenBuilderPage({
   params,

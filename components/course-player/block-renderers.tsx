@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import ReactMarkdown from "react-markdown";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, lazy, Suspense } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Info, CheckCircle, AlertTriangle } from "lucide-react";
+
+// Lazy load ReactMarkdown (saves ~50KB from initial bundle)
+const ReactMarkdown = lazy(() => import("react-markdown"));
 import type { BlockType } from "@/types/database";
 import type {
   VideoBlockContent,
@@ -79,11 +81,13 @@ function SliderBlock({ content }: { content: SliderBlockContent }) {
   return (
     <div className="rounded-lg overflow-hidden border bg-muted">
       <div className="relative aspect-video bg-muted">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={current.url}
           alt={current.alt ?? ""}
-          className="w-full h-full object-contain"
+          fill
+          className="object-contain"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+          loading="lazy"
         />
       </div>
       {(current.caption || images.length > 1) && (
@@ -147,7 +151,9 @@ function TextBlock({ content }: { content: TextBlockContent }) {
   const body = content.body ?? "";
   return (
     <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
-      <ReactMarkdown>{body}</ReactMarkdown>
+      <Suspense fallback={<div className="animate-pulse bg-muted h-20 rounded" />}>
+        <ReactMarkdown>{body}</ReactMarkdown>
+      </Suspense>
     </div>
   );
 }
@@ -279,13 +285,8 @@ function LinkBlock({ content }: { content: LinkBlockContent }) {
 }
 
 export function BlockRenderer({ type, content }: BlockProps) {
-  const base = (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-4"
-    >
+  return (
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
       {type === "h1" && <H1Block content={content as unknown as H1BlockContent} />}
       {type === "h2" && <H2Block content={content as unknown as H2BlockContent} />}
       {type === "callout" && <CalloutBlock content={content as unknown as CalloutBlockContent} />}
@@ -297,16 +298,17 @@ export function BlockRenderer({ type, content }: BlockProps) {
       {type === "checklist" && <ChecklistBlock content={content as unknown as ChecklistBlockContent} />}
       {type === "timer" && <TimerBlock content={content as unknown as TimerBlockContent} />}
       {type === "image" && (
-        <div className="rounded-lg overflow-hidden border bg-muted">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+        <div className="relative rounded-lg overflow-hidden border bg-muted aspect-video">
+          <Image
             src={(content as { url?: string }).url ?? ""}
             alt={(content as { alt?: string }).alt ?? ""}
-            className="w-full h-auto"
+            fill
+            className="object-contain"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+            loading="lazy"
           />
         </div>
       )}
-    </motion.div>
+    </div>
   );
-  return base;
 }

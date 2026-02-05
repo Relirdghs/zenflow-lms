@@ -1,11 +1,56 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { courseLevelLabel } from "@/lib/course-level";
 import { ChevronRight, Clock } from "lucide-react";
+
+// Generate dynamic metadata for SEO
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ courseId: string }>;
+}): Promise<Metadata> {
+  const { courseId } = await params;
+  const supabase = await createClient();
+
+  const { data: course } = await supabase
+    .from("courses")
+    .select("title, description, cover_image, level")
+    .eq("id", courseId)
+    .single();
+
+  if (!course) {
+    return {
+      title: "Курс не найден",
+    };
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://zenflow.app";
+
+  return {
+    title: course.title,
+    description: course.description || `Курс йоги: ${course.title}. Уровень: ${courseLevelLabel(course.level)}`,
+    openGraph: {
+      title: course.title,
+      description: course.description || `Курс йоги: ${course.title}`,
+      type: "article",
+      url: `${siteUrl}/dashboard/courses/${courseId}`,
+      images: course.cover_image
+        ? [{ url: course.cover_image, width: 1200, height: 630, alt: course.title }]
+        : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: course.title,
+      description: course.description || `Курс йоги: ${course.title}`,
+      images: course.cover_image ? [course.cover_image] : undefined,
+    },
+  };
+}
 
 export default async function CoursePage({
   params,
@@ -42,8 +87,36 @@ export default async function CoursePage({
 
   const isEnrolled = !!enrollment;
 
+  // Calculate total duration
+  const totalDuration = (lessons ?? []).reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
+
+  // Structured data for Course (JSON-LD)
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://zenflow.app";
+  const courseSchema = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: course.title,
+    description: course.description || `Курс йоги: ${course.title}`,
+    provider: {
+      "@type": "Organization",
+      name: "ZenFlow",
+      url: siteUrl,
+    },
+    educationalLevel: courseLevelLabel(course.level),
+    numberOfLessons: lessons?.length || 0,
+    timeRequired: `PT${totalDuration}M`,
+    image: course.cover_image || undefined,
+    url: `${siteUrl}/dashboard/courses/${courseId}`,
+  };
+
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <>
+      {/* Structured data for Course */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }}
+      />
+      <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-semibold">{course.title}</h1>
@@ -112,6 +185,7 @@ export default async function CoursePage({
           <p className="text-muted-foreground">Уроков пока нет.</p>
         )}
       </section>
-    </div>
+      </div>
+    </>
   );
 }
