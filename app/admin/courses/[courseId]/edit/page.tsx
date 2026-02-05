@@ -45,7 +45,7 @@ export default async function EditCoursePage({
     .from("course_groups")
     .select("group_id")
     .eq("course_id", courseId);
-  const defaultGroupIds = courseGroups?.map((g) => g.group_id) ?? [];
+  const defaultGroupIds = courseGroups?.map((g: { group_id: string }) => g.group_id) ?? [];
 
   return (
     <div className="max-w-xl space-y-6">
@@ -59,7 +59,7 @@ export default async function EditCoursePage({
         defaultCoverImage={course.cover_image ?? ""}
         defaultIsPublic={course.is_public ?? true}
         defaultGroupIds={defaultGroupIds}
-        groups={(groups ?? []).map((g) => ({ id: g.id, name: g.name }))}
+        groups={(groups ?? []).map((g: { id: string; name: string }) => ({ id: g.id, name: g.name }))}
       />
     </div>
   );
