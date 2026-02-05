@@ -31,7 +31,12 @@ const TestimonialsSection = dynamic(() => import("@/components/home/testimonials
   loading: () => <Skeleton className="h-64 w-full" />,
 });
 
-async function PopularCourses({ userId }: { userId?: string }) {
+const HAS_SUPABASE =
+  typeof process !== "undefined" &&
+  Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
+async function PopularCourses({ userId, skipDb }: { userId?: string; skipDb?: boolean }) {
+  if (skipDb || !HAS_SUPABASE) return null;
   try {
     const supabase = await createClient();
     const { data: courses } = await supabase
@@ -128,27 +133,29 @@ export default async function HomePage() {
   let panelHref = "/dashboard";
   let coursesHref = "/dashboard/courses";
 
-  try {
-    const supabase = await createClient();
-    const { data: { user: u } } = await supabase.auth.getUser();
-    user = u ?? null;
+  if (HAS_SUPABASE) {
+    try {
+      const supabase = await createClient();
+      const { data: { user: u } } = await supabase.auth.getUser();
+      user = u ?? null;
 
-    if (user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      try {
-        const role = await getRoleForRedirect(user.id, (user as { email?: string }).email, (user as { user_metadata?: Record<string, unknown> }).user_metadata);
-        if (role === "super_admin") {
-          panelHref = "/admin/super";
-          coursesHref = "/admin/courses";
-        } else if (role === "admin") {
-          panelHref = "/admin";
-          coursesHref = "/admin/courses";
+      if (user && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        try {
+          const role = await getRoleForRedirect(user.id, (user as { email?: string }).email, (user as { user_metadata?: Record<string, unknown> }).user_metadata);
+          if (role === "super_admin") {
+            panelHref = "/admin/super";
+            coursesHref = "/admin/courses";
+          } else if (role === "admin") {
+            panelHref = "/admin";
+            coursesHref = "/admin/courses";
+          }
+        } catch {
+          // use default hrefs
         }
-      } catch {
-        // use default hrefs
       }
+    } catch {
+      // Supabase or auth failed — render page with defaults
     }
-  } catch {
-    // Supabase or auth failed (e.g. missing env on build) — render page with defaults
   }
 
   return (
@@ -174,7 +181,7 @@ export default async function HomePage() {
             Популярные курсы
           </h2>
           <Suspense fallback={<PopularCoursesSkeleton />}>
-            <PopularCourses userId={user?.id} />
+            <PopularCourses userId={user?.id} skipDb={!HAS_SUPABASE} />
           </Suspense>
         </section>
 

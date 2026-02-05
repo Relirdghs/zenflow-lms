@@ -5,6 +5,13 @@ import { createClient } from "@/lib/supabase/server";
 const FALLBACK_STATS = { students: 500, rating: 4.9, reviews: 120 };
 
 async function getStats() {
+  if (
+    typeof process === "undefined" ||
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    return FALLBACK_STATS;
+  }
   try {
     const supabase = await createClient();
 
