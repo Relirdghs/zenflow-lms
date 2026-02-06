@@ -42,57 +42,70 @@ export async function WhyAlmatySection() {
   const stats = await getStats();
 
   return (
-    <section className="py-14 sm:py-16 scroll-mt-20">
-      <div className="container mx-auto px-4 sm:px-6 md:px-8">
-        <div className="text-center mb-10 sm:mb-14">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-foreground">
-            Почему выбирают нас в Алматы
+    <section className="py-16 sm:py-20 md:py-24 scroll-mt-20 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 relative z-10">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-foreground">
+            Почему выбирают нас в <span className="text-primary">Алматы</span>
           </h2>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             ZenFlow — это не просто платформа для обучения йоге. Это сообщество единомышленников,
             которые ценят здоровье, осознанность и личностный рост. Мы создали удобную онлайн-платформу
             специально для жителей Алматы, чтобы каждый мог заниматься йогой в удобное время и в любом районе города.
           </p>
         </div>
 
-        <div className="grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-3">
-          <Card className="border border-border/80 rounded-xl overflow-hidden bg-card">
-            <CardContent className="pt-6 text-center">
-              <div className="flex flex-col items-center gap-3">
-                <div className="p-3 rounded-full bg-primary/10">
-                  <Users className="h-8 w-8 text-primary" />
+        <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-3 mb-12 sm:mb-16">
+          <Card className="group border-2 border-border/50 hover:border-primary/30 bg-card hover:shadow-2xl transition-all duration-300 rounded-2xl hover:-translate-y-1 overflow-hidden">
+            <CardContent className="pt-10 pb-10 px-6 text-center relative">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+              <div className="flex flex-col items-center gap-6">
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Users className="h-10 w-10 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-3xl sm:text-4xl font-bold">{stats.students}+</p>
-                  <p className="text-sm text-muted-foreground mt-1">Учеников из Алматы</p>
+                  <p className="text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+                    {stats.students}+
+                  </p>
+                  <p className="text-base sm:text-lg font-semibold text-foreground">Учеников из Алматы</p>
+                  <p className="text-sm text-muted-foreground mt-2">Присоединяйтесь к сообществу</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border border-border/80 rounded-xl overflow-hidden bg-card">
-            <CardContent className="pt-6 text-center">
-              <div className="flex flex-col items-center gap-3">
-                <div className="p-3 rounded-full bg-amber-500/15">
-                  <Star className="h-8 w-8 fill-amber-500 text-amber-500 dark:fill-amber-400 dark:text-amber-400" />
+          <Card className="group border-2 border-border/50 hover:border-primary/30 bg-card hover:shadow-2xl transition-all duration-300 rounded-2xl hover:-translate-y-1 overflow-hidden">
+            <CardContent className="pt-10 pb-10 px-6 text-center relative">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-yellow-500" />
+              <div className="flex flex-col items-center gap-6">
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-500/20 to-yellow-500/10 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Star className="h-10 w-10 fill-amber-500 text-amber-500 dark:fill-amber-400 dark:text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-3xl sm:text-4xl font-bold">{stats.rating}</p>
-                  <p className="text-sm text-muted-foreground mt-1">Средний рейтинг</p>
+                  <p className="text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent mb-2">
+                    {stats.rating}
+                  </p>
+                  <p className="text-base sm:text-lg font-semibold text-foreground">Средний рейтинг</p>
+                  <p className="text-sm text-muted-foreground mt-2">Высокое качество обучения</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border border-border/80 rounded-xl overflow-hidden bg-card">
-            <CardContent className="pt-6 text-center">
-              <div className="flex flex-col items-center gap-3">
-                <div className="p-3 rounded-full bg-primary/10">
-                  <MessageSquare className="h-8 w-8 text-primary" />
+          <Card className="group border-2 border-border/50 hover:border-primary/30 bg-card hover:shadow-2xl transition-all duration-300 rounded-2xl hover:-translate-y-1 overflow-hidden">
+            <CardContent className="pt-10 pb-10 px-6 text-center relative">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500" />
+              <div className="flex flex-col items-center gap-6">
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/10 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <MessageSquare className="h-10 w-10 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-3xl sm:text-4xl font-bold">{stats.reviews}+</p>
-                  <p className="text-sm text-muted-foreground mt-1">Отзывов учеников</p>
+                  <p className="text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+                    {stats.reviews}+
+                  </p>
+                  <p className="text-base sm:text-lg font-semibold text-foreground">Отзывов учеников</p>
+                  <p className="text-sm text-muted-foreground mt-2">Реальные истории успеха</p>
                 </div>
               </div>
             </CardContent>
@@ -100,12 +113,16 @@ export async function WhyAlmatySection() {
         </div>
 
         {/* Дополнительный текст */}
-        <div className="mt-8 sm:mt-12 text-center">
-          <p className="text-sm sm:text-base text-muted-foreground max-w-3xl mx-auto">
-            Присоединяйтесь к сообществу ZenFlow и начните свой путь к здоровью и гармонии.
-            Наши курсы подходят для всех уровней подготовки — от новичков до опытных практиков.
-            Занимайтесь в удобное время, отслеживайте прогресс и достигайте новых высот вместе с нами.
-          </p>
+        <div className="text-center max-w-4xl mx-auto">
+          <div className="inline-block p-8 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-2 border-primary/20">
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4">
+              Присоединяйтесь к сообществу ZenFlow и начните свой путь к здоровью и гармонии.
+            </p>
+            <p className="text-base sm:text-lg text-foreground font-medium">
+              Наши курсы подходят для всех уровней подготовки — от новичков до опытных практиков.
+              Занимайтесь в удобное время, отслеживайте прогресс и достигайте новых высот вместе с нами.
+            </p>
+          </div>
         </div>
       </div>
     </section>
